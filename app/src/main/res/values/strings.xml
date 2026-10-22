@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 中文（唯一语言）。文案以 design-doc.md §3 为准；应用名 2026-10-20 由用户改为「千里眼」。改中文文案后重跑 tools/subset_cjk_font.py。 -->
+<resources>
+    <string name="app_name">千里眼</string>
+
+    <!-- 配对卡 -->
+    <string name="lobby_title">千里眼 · 等待专家接入</string>
+    <string name="lobby_address_unknown">未连接 Wi-Fi</string>
+    <string name="lobby_perm_granted">摄像头 · 已授权</string>
+    <string name="lobby_perm_denied">摄像头权限未授权 · 专家将看不到画面</string>
+    <string name="lobby_grant">授权</string>
+    <string name="lobby_hint">同一 Wi-Fi 下，用电脑浏览器打开上面的地址，输入这 4 位 PIN</string>
+    <string name="lobby_locked">连错 5 次 · 60 秒后再试</string>
+
+    <!-- 通话条状态 -->
+    <string name="strip_live">直播</string>
+    <string name="strip_connected">专家已连接</string>
+    <string name="strip_pen_on">画笔开 · 在玻璃上画</string>
+    <string name="strip_paused">已暂停共享</string>
+    <string name="strip_reconnecting">重连中…</string>
+    <string name="strip_stale">画面 3 秒前</string>
+    <string name="strip_error">画面不可用 · 读回失败</string>
+    <string name="strip_confirm_end">结束会话并停止共享？</string>
+    <string name="strip_yes">是</string>
+    <string name="strip_no">否</string>
+
+    <!-- 通话条键（无障碍描述） -->
+    <string name="key_pen">画笔</string>
+    <string name="key_undo">撤销</string>
+    <string name="key_clear">清除</string>
+    <string name="key_share_on">共享开关 · 共享中</string>
+    <string name="key_share_off">共享开关 · 已暂停</string>
+    <string name="key_end">结束会话</string>
+    <string name="key_live_dot">共享中</string>
+
+    <!-- 视野玻璃 -->
+    <string name="glass_chip_pen">在玻璃上画 · 专家同步看到</string>
+</resources>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Debug builds only: state hooks driven over adb (QA screenshots per design state);
+             usage in AGENTS.md ("Debug commands"). XML comments cannot hold a double hyphen. -->
+        <receiver
+            android:name=".debug.DebugCommandReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="io.embodit.jieyan.DEBUG" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

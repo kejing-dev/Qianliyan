@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>千里眼 · 专家台</title>
+<style>
+  /* 千里眼 (Qianliyan) expert console — chalk on slate (design-doc §3). Served by the headset at http://<ip>:8765 */
+  :root{
+    --slate:#20262A; --slate-deep:#161B1E; --glass:rgba(255,255,255,.08); --glass-2:rgba(255,255,255,.14);
+    --line:rgba(255,255,255,.14); --label:#F3F4F5; --label-2:rgba(243,244,245,.66); --label-3:rgba(243,244,245,.42);
+    --error:#FF5F52; --alert:#FF8A1F; --passable:#7CF2A3; --interaction:#FFE14D;
+    --chalk-yellow:#FFE14D; --chalk-white:#F6F2E6; --chalk-pink:#FF8FB1; --chalk-blue:#8CD5FF; --ink:#1E1A0E; --live:#FF3B30;
+  }
+  *{box-sizing:border-box} html,body{height:100%;margin:0}
+  body{background:var(--slate);color:var(--label);font:500 14px/18px "Noto Sans","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  button:disabled{cursor:default}
+  .hidden{display:none !important}
+
+  /* ---- gate (E1) ---- */
+  #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .card{width:340px;background:var(--glass);border:1px solid var(--line);border-radius:28px;padding:28px 28px 24px;backdrop-filter:blur(20px)}
+  .card h1{font-size:20px;line-height:26px;font-weight:600;margin:0 0 6px}
+  .card p{margin:0 0 20px;color:var(--label-2)}
+  .field{display:flex;align-items:center;height:56px;border-radius:16px;background:var(--glass-2);border:1px solid transparent;padding:0 16px;margin-bottom:8px}
+  .field input{flex:1;background:none;border:0;outline:0;color:var(--label);font:700 28px/34px "Noto Sans",monospace;letter-spacing:10px;min-width:0}
+  .field input::placeholder{color:var(--label-3);letter-spacing:10px;font-weight:600}
+  .field.error{border-color:var(--error)}
+  .errline{min-height:18px;color:var(--error);margin-bottom:16px}
+  .btn{height:48px;border-radius:24px;padding:0 24px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .btn.primary{background:var(--interaction);color:var(--ink);width:100%}
+  .btn.primary:disabled{opacity:.4}
+  .btn.ghost{background:var(--glass-2);color:var(--label)}
+  .btn.danger{background:var(--error);color:#fff}
+  .note{margin-top:16px;color:var(--label-3);font-size:12px;line-height:16px}
+
+  /* ---- console ---- */
+  #console{position:fixed;inset:0;display:flex;flex-direction:column}
+  header{height:56px;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--line)}
+  header .brand{font-weight:600;font-size:16px}
+  .pill{display:inline-flex;align-items:center;gap:8px;height:28px;border-radius:14px;padding:0 12px;background:var(--glass-2);font:600 12px/16px inherit}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--label-3)}
+  .pill.live .dot{background:var(--live);animation:breathe 1.8s ease-in-out infinite}
+  .pill.paused,.pill.reconnecting,.pill.stale{color:var(--alert)}
+  .pill.paused .dot,.pill.reconnecting .dot,.pill.stale .dot{background:var(--alert)}
+  @keyframes breathe{0%,100%{opacity:1}50%{opacity:.35}}
+  header .meta{color:var(--label-2);font:600 12px/16px inherit;font-variant-numeric:tabular-nums}
+  header .spacer{flex:1}
+  main{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;min-height:0}
+  .stage{display:flex;flex-direction:column;gap:12px;max-width:100%;max-height:100%}
+  .vf-wrap{position:relative;background:var(--slate-deep);border-radius:20px;overflow:hidden;aspect-ratio:16/9;max-height:calc(100vh - 56px - 40px - 68px);max-width:calc((100vh - 56px - 40px - 68px) * 16 / 9);width:min(100%, 1280px)}
+  .vf-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #frame{z-index:1} #ink{z-index:2;cursor:crosshair}
+  .vf-wrap.stale #frame{filter:grayscale(1) brightness(.55)}
+  .vf-wrap.nopen #ink{cursor:default}
+  .chip{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:6px;height:28px;border-radius:14px;padding:0 12px;background:rgba(32,38,42,.78);border:1px solid var(--line);font:600 12px/16px inherit;backdrop-filter:blur(10px)}
+  .chip.tl{left:16px;top:16px;color:var(--chalk-blue)} .chip.tr{right:16px;top:16px;color:var(--ink);background:var(--alert);border-color:transparent}
+  .vf-hint{position:absolute;z-index:3;left:0;right:0;bottom:40px;text-align:center;color:var(--label-2);font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
+  .overlay{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(22,27,30,.72);backdrop-filter:blur(6px);text-align:center;padding:24px}
+  .overlay .big{font-size:20px;line-height:26px;font-weight:600}
+  .overlay .sub{color:var(--label-2);max-width:380px}
+  .ring{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--alert);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---- chalk tray ---- */
+  .tray{height:56px;border-radius:28px;background:var(--glass);border:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;align-self:center;backdrop-filter:blur(20px)}
+  .tray.disabled{opacity:.3;pointer-events:none}
+  .tray .sep{width:1px;height:28px;background:var(--line);margin:0 6px}
+  .sw{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative}
+  .sw i{width:26px;height:26px;border-radius:50%;display:block}
+  .sw.on i{box-shadow:0 0 0 2px var(--slate),0 0 0 4px #fff}
+  .sw.on::after{content:"✓";position:absolute;color:var(--ink);font-weight:700;font-size:14px}
+  .wd{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+  .wd i{display:block;border-radius:50%;background:var(--label)}
+  .wd.on{background:var(--interaction)} .wd.on i{background:var(--ink)}
+  .ib{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--glass-2)}
+  .ib:disabled{opacity:.35}
+  .ib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .switch{display:inline-flex;align-items:center;gap:8px;padding:0 4px 0 8px;color:var(--label-2);font-size:12px;font-weight:600}
+  .switch .track{width:40px;height:24px;border-radius:12px;background:var(--glass-2);position:relative;transition:background .15s}
+  .switch .track::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+  .switch.on .track{background:var(--passable)} .switch.on .track::after{left:19px}
+
+  /* ---- snackbar, dialog ---- */
+  #snack{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:16px;height:56px;border-radius:28px;padding:0 20px;background:rgba(32,38,42,.92);border:1px solid var(--line);backdrop-filter:blur(20px);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+  #snack button{color:var(--interaction);font-weight:600}
+  dialog{background:var(--slate);color:var(--label);border:1px solid var(--line);border-radius:28px;padding:28px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  dialog h2{margin:0 0 8px;font-size:20px;line-height:26px}
+  dialog p{margin:0 0 20px;color:var(--label-2)}
+  dialog .row{display:flex;justify-content:flex-end;gap:10px}
+</style>
+</head>
+<body>
+
+<!-- E1 · PIN gate -->
+<section id="gate" data-state="empty">
+  <div class="card">
+    <h1>连接到现场</h1>
+    <p>在头显的配对卡上看 4 位 PIN，输入后连接。</p>
+    <div class="field" id="pin-field"><input id="pin" inputmode="numeric" maxlength="4" placeholder="····" autocomplete="off" autofocus></div>
+    <div class="errline" id="gate-err"></div>
+    <button class="btn primary" id="connect" disabled>连接</button>
+    <div class="note" id="gate-note">浏览器与头显需在同一 Wi-Fi。</div>
+  </div>
+</section>
+
+<!-- console -->
+<section id="console" class="hidden" data-state="live">
+  <header>
+    <span class="brand">千里眼 · 专家台</span>
+    <span class="pill live" id="pill"><span class="dot"></span><span id="pill-text">直播</span></span>
+    <span class="meta" id="meta">— ms · 0 fps</span>
+    <span class="spacer"></span>
+    <button class="btn ghost" id="end-btn" style="height:36px;border-radius:18px">结束</button>
+  </header>
+  <main>
+    <div class="stage">
+      <div class="vf-wrap" id="vf">
+        <canvas id="frame" width="640" height="360"></canvas>
+        <canvas id="ink" width="1280" height="720"></canvas>
+        <span class="chip tl hidden" id="chip-pen">✎ 对方画笔已开</span>
+        <span class="chip tr hidden" id="chip-stale">⏱ 画面 3 秒前</span>
+        <div class="vf-hint" id="vf-hint">直接在画面上画，现场人员立刻看到 · 悬停即指点</div>
+        <div class="overlay hidden" id="vf-paused"><div class="big">⏸ 对方已暂停共享</div><div class="sub">现场人员关掉了共享，画面停在最后一帧。再开时自动恢复。</div></div>
+        <div class="overlay hidden" id="vf-reconnecting"><div class="ring"></div><div class="big">重连中…</div><div class="sub">与头显的连接断了，正在每 2 秒重试；30 秒内恢复则继续。</div></div>
+        <div class="overlay hidden" id="vf-error"><div class="big">⚠ 画面不可用</div><div class="sub">头显未能读取摄像头画面（权限或读回失败）。笔迹仍会同步。</div></div>
+      </div>
+      <div class="tray" id="tray">
+        <button class="sw on" data-color="#FFE14D" title="黄"><i style="background:#FFE14D"></i></button>
+        <button class="sw" data-color="#F6F2E6" title="白"><i style="background:#F6F2E6"></i></button>
+        <button class="sw" data-color="#FF8FB1" title="粉"><i style="background:#FF8FB1"></i></button>
+        <span class="sep"></span>
+        <button class="wd" data-width="4" title="细"><i style="width:6px;height:6px"></i></button>
+        <button class="wd on" data-width="7" title="中"><i style="width:10px;height:10px"></i></button>
+        <button class="wd" data-width="12" title="粗"><i style="width:16px;height:16px"></i></button>
+        <span class="sep"></span>
+        <button class="ib" id="undo" title="撤销 (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 4 4 9l5 5"/><path d="M4 9h9.5a5.5 5.5 0 0 1 0 11H10"/></svg></button>
+        <button class="ib" id="clear" title="清除全部"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg></button>
+        <span class="sep"></span>
+        <button class="switch" id="fade" title="8 秒淡出"><span>8 秒淡出</span><span class="track"></span></button>
+      </div>
+    </div>
+  </main>
+</section>
+
+<div id="snack" class="hidden"><span id="snack-text"></span><button id="snack-action"></button></div>
+
+<dialog id="end-dialog">
+  <h2>结束会话？</h2>
+  <p>头显会停止共享并回到配对界面，笔迹全部清除。</p>
+  <div class="row"><button class="btn ghost" id="dlg-cancel">取消</button><button class="btn danger" id="dlg-end">结束</button></div>
+</dialog>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const gate = $('gate'), con = $('console'), vf = $('vf');
+  const frameC = $('frame'), inkC = $('ink');
+  const fctx = frameC.getContext('2d'), ictx = inkC.getContext('2d');
+  const REF_W = 1280, REF_H = 720;
+
+  // ---------------- state (mirror of the headset) ----------------
+  let ws = null, session = sessionStorage.getItem('jieyan.session') || null, pin = '';
+  let phase = 'lobby', share = true, workerPen = false, data = 'normal', fadeOn = false;
+  let strokes = [];           // {id, owner, color, width, pts:[[x,y]], endedAt}
+  let live = null;            // my stroke under the mouse
+  let color = '#FFE14D', width = 7;
+  let pointer = null, pointerAt = 0, lastPointerSent = 0;
+  let lastFrameAt = 0, frames = 0, fpsWindowStart = performance.now(), fps = 0, rtt = null;
+  let reconnectTimer = null, wantReconnect = false, ended = false, lastCleared = null;
+  let imgW = 640, imgH = 360;
+
+  // ---------------- gate ----------------
+  const pinInput = $('pin'), connectBtn = $('connect'), gateErr = $('gate-err'), pinField = $('pin-field');
+  pinInput.addEventListener('input', () => { pinInput.value = pinInput.value.replace(/\D/g,'').slice(0,4); connectBtn.disabled = pinInput.value.length !== 4; pinField.classList.remove('error'); gateErr.textContent=''; });
+  pinInput.addEventListener('keydown', e => { if (e.key === 'Enter' && pinInput.value.length === 4) connect(); });
+  connectBtn.addEventListener('click', connect);
+
+  function showGate(state, msg){
+    gate.dataset.state = state; con.classList.add('hidden'); gate.classList.remove('hidden');
+    gateErr.textContent = msg || ''; pinField.classList.toggle('error', state === 'pinError');
+    if (state !== 'pinError') { pinInput.value = ''; connectBtn.disabled = true; }
+    setTimeout(() => pinInput.focus(), 50);
+  }
+  function showConsole(){ gate.classList.add('hidden'); con.classList.remove('hidden'); }
+
+  function connect(){
+    pin = pinInput.value; ended = false; wantReconnect = false;
+    open(false);
+  }
+
+  // ---------------- socket ----------------
+  function open(isReconnect){
+    if (ws) { try { ws.onclose = null; ws.close(); } catch(e){} ws = null; }
+    const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
+    let s;
+    try { s = new WebSocket(url); } catch(e){ onClosed(); return; }
+    s.binaryType = 'arraybuffer';
+    ws = s;
+    s.onopen = () => { s.send(JSON.stringify({t:'hello', pin, session: isReconnect ? session : null, client:'web', ua: navigator.userAgent})); };
+    s.onmessage = ev => { if (typeof ev.data === 'string') onJson(JSON.parse(ev.data)); else onFrame(ev.data); };
+    s.onclose = () => onClosed();
+    s.onerror = () => {};
+  }
+  function onClosed(){
+    ws = null;
+    if (ended) return;
+    if (session && wantReconnect) { setState('reconnecting'); if (!reconnectTimer) reconnectTimer = setInterval(() => open(true), 2000); }
+    else if (!gate.classList.contains('hidden')) { /* still at the gate */ }
+    else showGate('disconnected', '连接已断开');
+  }
+  function stopReconnect(){ if (reconnectTimer) { clearInterval(reconnectTimer); reconnectTimer = null; } }
+
+  function send(o){ if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
+
+  function onJson(m){
+    switch (m.t) {
+      case 'welcome':
+        session = m.session; sessionStorage.setItem('jieyan.session', session);
+        imgW = m.imageW || 640; imgH = m.imageH || 360; frameC.width = imgW; frameC.height = imgH;
+        strokes = []; live = null; pointer = null; // the full state follows the welcome
+        wantReconnect = true; stopReconnect(); showConsole(); setState('live'); break;
+      case 'reject':
+        wantReconnect = false; stopReconnect();
+        if (m.reason === 'pin') showGate('pinError', 'PIN 不对，再看一眼头显上的数字');
+        else if (m.reason === 'locked') showGate('pinError', '连错 5 次，60 秒后再试');
+        else if (m.reason === 'busy') showGate('empty', '已有协助者连接');
+        else showGate('empty', '被拒绝：' + m.reason);
+        break;
+      case 'state':
+        phase = m.phase; share = !!m.share; workerPen = !!m.pen; data = m.data || 'normal'; fadeOn = !!m.fade;
+        strokes = (m.strokes || []).map(norm); setFadeUi(); setState(phase); break;
+      case 'stroke.begin': { const s = norm(m); strokes = strokes.filter(x => x.id !== s.id); strokes.push(s); break; }
+      case 'stroke.point': { const s = strokes.find(x => x.id === m.id); if (s) s.pts.push(...(m.pts || [])); break; }
+      case 'stroke.end': { const s = strokes.find(x => x.id === m.id); if (s) s.endedAt = performance.now(); break; }
+      case 'undo': strokes = strokes.filter(x => x.id !== m.id); break;
+      case 'clear': strokes = []; if (m.by === 'worker') snack('对方清除了全部笔迹', null); break;
+      case 'unclear': { const have = new Set(strokes.map(s => s.id)); strokes = (m.strokes || []).map(norm).filter(s => !have.has(s.id)).concat(strokes); break; }
+      case 'pointer': break;
+      case 'pen': workerPen = !!m.on; setChips(); break;
+      case 'fade': fadeOn = !!m.on; setFadeUi(); break;
+      case 'end': ended = true; wantReconnect = false; stopReconnect(); session = null; sessionStorage.removeItem('jieyan.session'); showGate('sessionEnded', m.reason === 'expert' ? '' : '会话已结束'); break;
+      case 'pong': rtt = Math.round(performance.now() - m.ts); break;
+    }
+    draw();
+  }
+  function norm(s){ return {id:s.id, owner:s.owner, color:s.color || '#FFE14D', width:s.width || 6, pts:(s.pts||[]).slice(), endedAt: s.endedAt ? performance.now() : null}; }
+
+  function onFrame(buf){
+    const dv = new DataView(buf);
+    const jpeg = new Blob([buf.slice(12)], {type:'image/jpeg'});
+    createImageBitmap(jpeg).then(bmp => { fctx.drawImage(bmp, 0, 0, frameC.width, frameC.height); bmp.close(); }).catch(() => {});
+    lastFrameAt = performance.now(); frames++;
+    if (data === 'stale') { data = 'normal'; setState(phase); }
+  }
+
+  // ---------------- state -> UI ----------------
+  const pill = $('pill'), pillText = $('pill-text');
+  function setState(ph){
+    phase = ph;
+    con.dataset.state = ph; con.classList.toggle('worker-pen', workerPen);
+    con.classList.toggle('data-fallback', data === 'stale'); con.classList.toggle('data-error', data === 'error');
+    const overlays = {paused: ph === 'paused', reconnecting: ph === 'reconnecting', error: ph === 'live' && data === 'error'};
+    $('vf-paused').classList.toggle('hidden', !overlays.paused);
+    $('vf-reconnecting').classList.toggle('hidden', !overlays.reconnecting);
+    $('vf-error').classList.toggle('hidden', !overlays.error);
+    vf.classList.toggle('stale', ph === 'live' && data === 'stale');
+    $('tray').classList.toggle('disabled', ph === 'reconnecting');
+    let cls = 'pill', txt = '直播';
+    if (ph === 'reconnecting') { cls += ' reconnecting'; txt = '重连中'; }
+    else if (ph === 'paused') { cls += ' paused'; txt = '已暂停'; }
+    else if (data === 'stale') { cls += ' stale'; txt = '画面过期'; }
+    else if (data === 'error') { cls += ' paused'; txt = '画面不可用'; }
+    else { cls += ' live'; }
+    pill.className = cls; pillText.textContent = txt;
+    setChips();
+  }
+  function setChips(){
+    $('chip-pen').classList.toggle('hidden', !workerPen);
+    $('chip-stale').classList.toggle('hidden', !(phase === 'live' && data === 'stale'));
+  }
+  function setFadeUi(){ $('fade').classList.toggle('on', fadeOn); }
+
+  // ---------------- drawing (strokes + pointer) ----------------
+  function alphaOf(s, now){
+    if (!fadeOn || !s.endedAt) return 1;
+    const since = now - s.endedAt;
+    if (since < 8000) return 1; if (since >= 10000) return 0; return 1 - (since - 8000) / 2000;
+  }
+  function drawStroke(s, a){
+    if (!s.pts.length || a <= 0) return;
+    const w = s.width * (inkC.width / REF_W);
+    ictx.lineCap = 'round'; ictx.lineJoin = 'round'; ictx.globalAlpha = a;
+    if (s.pts.length === 1) {
+      const [x,y] = s.pts[0];
+      ictx.beginPath(); ictx.arc(x*inkC.width, y*inkC.height, w/2 + 2, 0, Math.PI*2); ictx.fillStyle = 'rgba(0,0,0,.45)'; ictx.fill();
+      ictx.beginPath(); ictx.arc(x*inkC.width, y*inkC.height, w/2, 0, Math.PI*2); ictx.fillStyle = s.color; ictx.fill();
+      ictx.globalAlpha = 1; return;
+    }
+    ictx.beginPath();
+    s.pts.forEach(([x,y],i) => { const px = x*inkC.width, py = y*inkC.height; if (i) ictx.lineTo(px,py); else ictx.moveTo(px,py); });
+    ictx.strokeStyle = 'rgba(0,0,0,.45)'; ictx.lineWidth = w + 4; ictx.stroke();
+    ictx.strokeStyle = s.color; ictx.lineWidth = w; ictx.stroke();
+    ictx.globalAlpha = 1;
+  }
+  function draw(){
+    const now = performance.now();
+    ictx.clearRect(0,0,inkC.width,inkC.height);
+    if (fadeOn) strokes = strokes.filter(s => alphaOf(s, now) > 0);
+    for (const s of strokes) drawStroke(s, alphaOf(s, now));
+    if (live) drawStroke(live, 1);
+    if (pointer && now - pointerAt < 700) {
+      ictx.beginPath(); ictx.arc(pointer[0]*inkC.width, pointer[1]*inkC.height, 11, 0, Math.PI*2); ictx.fillStyle = 'rgba(0,0,0,.45)'; ictx.fill();
+      ictx.beginPath(); ictx.arc(pointer[0]*inkC.width, pointer[1]*inkC.height, 8, 0, Math.PI*2); ictx.fillStyle = '#FFE14D'; ictx.fill();
+    }
+  }
+
+  // ---------------- chalk input ----------------
+  function at(ev){ const r = inkC.getBoundingClientRect(); return [Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height))]; }
+  let pending = [], flushTimer = null;
+  function flush(){ if (live && pending.length) { send({t:'stroke.point', id: live.id, pts: pending}); pending = []; } }
+  inkC.addEventListener('pointerdown', ev => {
+    if (phase === 'reconnecting' || ended) return;
+    inkC.setPointerCapture(ev.pointerId);
+    const p = at(ev);
+    live = {id: 'e' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36), owner:'expert', color, width, pts:[p], endedAt:null};
+    send({t:'stroke.begin', id: live.id, owner:'expert', color, width, pts:[p]});
+    pending = []; flushTimer = setInterval(flush, 33); draw();
+  });
+  inkC.addEventListener('pointermove', ev => {
+    const p = at(ev);
+    if (live) { live.pts.push(p); pending.push(p); draw(); return; }
+    const now = performance.now();
+    if (now - lastPointerSent >= 50) { lastPointerSent = now; send({t:'pointer', x:p[0], y:p[1]}); }
+    pointer = p; pointerAt = now; draw();
+  });
+  function endStroke(){
+    if (!live) return;
+    clearInterval(flushTimer); flushTimer = null; flush();
+    live.endedAt = performance.now(); strokes.push(live); send({t:'stroke.end', id: live.id}); live = null; draw();
+  }
+  inkC.addEventListener('pointerup', endStroke); inkC.addEventListener('pointercancel', endStroke);
+  inkC.addEventListener('pointerleave', () => { pointer = null; draw(); });
+
+  // tray
+  document.querySelectorAll('.sw').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.sw').forEach(x => x.classList.remove('on')); b.classList.add('on'); color = b.dataset.color; }));
+  document.querySelectorAll('.wd').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.wd').forEach(x => x.classList.remove('on')); b.classList.add('on'); width = +b.dataset.width; }));
+  function undo(){ const mine = strokes.filter(s => s.owner === 'expert'); if (!mine.length) return; const last = mine[mine.length-1]; strokes = strokes.filter(s => s.id !== last.id); send({t:'undo', id:last.id, owner:'expert'}); draw(); }
+  $('undo').addEventListener('click', undo);
+  document.addEventListener('keydown', ev => { if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z' && !con.classList.contains('hidden')) { ev.preventDefault(); undo(); } });
+  $('clear').addEventListener('click', () => { if (!strokes.length) return; lastCleared = strokes; strokes = []; send({t:'clear'}); draw(); snack('已清除全部笔迹', '撤销', () => { if (lastCleared) { strokes = lastCleared.concat(strokes); lastCleared = null; send({t:'unclear'}); draw(); } }); });
+  $('fade').addEventListener('click', () => { fadeOn = !fadeOn; setFadeUi(); send({t:'fade', on: fadeOn}); draw(); });
+
+  // end (E3)
+  const dlg = $('end-dialog');
+  $('end-btn').addEventListener('click', () => dlg.showModal());
+  $('dlg-cancel').addEventListener('click', () => dlg.close());
+  $('dlg-end').addEventListener('click', () => { dlg.close(); ended = true; wantReconnect = false; stopReconnect(); send({t:'end'}); session = null; sessionStorage.removeItem('jieyan.session'); setTimeout(() => showGate('sessionEnded', '会话已结束'), 150); });
+
+  // snackbar (E2)
+  let snackTimer = null;
+  function snack(text, action, fn){
+    const s = $('snack'); $('snack-text').textContent = text; const b = $('snack-action');
+    b.textContent = action || ''; b.classList.toggle('hidden', !action); b.onclick = () => { if (fn) fn(); s.classList.add('hidden'); };
+    s.classList.remove('hidden'); clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.add('hidden'), 8000);
+  }
+
+  // ---------------- timers: ping, fps, stale, fade ----------------
+  setInterval(() => { send({t:'ping', ts: performance.now()}); }, 2000);
+  setInterval(() => {
+    const now = performance.now();
+    const dt = now - fpsWindowStart; if (dt >= 1000) { fps = Math.round(frames * 1000 / dt); frames = 0; fpsWindowStart = now; }
+    const stale = phase === 'live' && share && lastFrameAt && now - lastFrameAt > 3000;
+    if (stale && data === 'normal') { data = 'stale'; setState(phase); }
+    $('meta').textContent = (data === 'stale' || phase !== 'live' ? '— ms · 0 fps' : (rtt == null ? '— ms' : rtt + ' ms') + ' · ' + fps + ' fps');
+    if (fadeOn || pointer) draw();
+  }, 250);
+
+  // harness hooks (preview parity): window.jieyan.*
+  window.jieyan = { state: () => ({phase, share, workerPen, data, fadeOn, strokes: strokes.length, session}), send };
+  showGate('empty', '');
+})();
+</script>
+</body>
+</html>

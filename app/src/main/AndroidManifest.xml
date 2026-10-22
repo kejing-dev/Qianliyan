@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- CAMERA: SpatialML readback of the VST image (device only; the emulator uses the synthetic source).
+         INTERNET / network state: the headset hosts the expert page and the WebSocket on :8765. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <application
+        android:name=".platform.SpatialApplication"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_spatial_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_spatial_launcher"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:theme="@style/Theme.Jieyan"
+        tools:targetApi="31">
+
+        <activity
+            android:name=".platform.LaunchActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Jieyan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- DefaultStage: one Mixed Stage (passthrough at full intensity) holds the whole product -->
+            <meta-data
+                android:name="pico.spatial.stage.id"
+                android:value="JieyanStage" />
+            <meta-data
+                android:name="pico.spatial.stage.style"
+                android:value="1" />
+            <meta-data
+                android:name="pico.spatial.stage.immersion"
+                android:value="0" />
+            <meta-data
+                android:name="pico.spatial.stage.immersion_min"
+                android:value="0" />
+            <meta-data
+                android:name="pico.spatial.stage.immersion_max"
+                android:value="0" />
+        </activity>
+
+        <!-- Transparent helper that asks for the camera permission (a Stage has no Activity of its own). -->
+        <activity
+            android:name=".platform.PermissionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.Jieyan" />
+
+        <meta-data android:name="icon.3d.list" android:resource="@array/icon_3d_list" />
+        <meta-data android:name="icon.sdf.list" android:resource="@array/icon_sdf_list" />
+    </application>
+
+</manifest>

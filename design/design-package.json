@@ -1,0 +1,291 @@
+{
+  "appId": "jieyan",
+  "name": "千里眼 Qianliyan",
+  "packageName": "io.embodit.jieyan",
+  "version": "v2",
+  "source": {
+    "designDoc": "C:/Users/Admin/Downloads/jieyan/design/design-doc.md",
+    "prototype": "C:/Users/Admin/Downloads/jieyan/design/preview.html",
+    "uxFlow": "C:/Users/Admin/Downloads/jieyan/design/ux-flow.html",
+    "networking": "C:/Users/Admin/Downloads/jieyan/design/networking.md",
+    "reviewVerdict": "pass",
+    "reviewedAt": "2026-10-19"
+  },
+  "oneLiner": "戴 Swan 的现场人员把眼前的实时画面分享给电脑前的专家；专家直接在视频上画，笔迹同一时刻出现在现场人员眼前一块跟着视野走的透明玻璃上，位置和专家画的地方对得上；现场人员也能在同一块玻璃上画，专家的视频上同步看到。",
+  "container": {
+    "type": "STAGE_MIXED",
+    "mode": "Full Space 透视（passthrough）",
+    "archetype": "D",
+    "notes": [
+      "画面不冻结：标注直接落在实时视频上，随时清除（v1「一画即冻结」已被用户否决）",
+      "视野玻璃头锁定，笔迹跟视野走、不贴实物（贴实物的方向 C 列为 v2）",
+      "Stage 内不用浮层对话框（AlertDialog 不显示内容、SnackbarHost 不可用）：确认在通话条内联，提示用通话条状态文字",
+      "不用 Toolbar / TabBar / Subwindow 附件；平时视野里只有一条通话条"
+    ],
+    "permissions": ["CAMERA", "INTERNET"],
+    "lifecycle": "退后台 / 关容器 → 停止读回、关 socket、停服务器、清 strokes"
+  },
+  "roles": [
+    { "id": "worker", "name": "现场人员", "device": "Swan 头显（Stage Mixed）", "input": "眼手 / 手柄短暂点一下；双手在干活" },
+    { "id": "expert", "name": "专家", "device": "电脑浏览器（LAN 内网页 http://<ip>:8765）", "input": "鼠标；大屏幕" }
+  ],
+  "panels": [
+    {
+      "id": "callStrip",
+      "name": "通话条 Call Strip",
+      "side": "headset",
+      "surface": "Stage 内 Planar 面板，懒跟随，视野下沿",
+      "distanceM": 0.9,
+      "sizeDp": { "default": [616, 112], "min": [520, 112], "max": [760, 112] },
+      "physicalM": [0.38, 0.07],
+      "material": "Material.Regular 玻璃（系统默认，根面不另画背景）",
+      "content": "直播红点 + 一行状态文字 + 5 个 56 dp 图标键（✎ 画笔 / ↶ 撤销 / 🗑 清除 / ◉ 共享开关 / ⏻ 结束）",
+      "states": ["live", "pen", "paused", "reconnecting", "confirmEnd", "frameError"],
+      "densityCap": "≤ 5 个键 + 1 行状态",
+      "notes": "内联确认时条体前移 +8 dp（zOffset），文字换成「结束会话并停止共享？」+ 是 / 否"
+    },
+    {
+      "id": "lobbyCard",
+      "name": "配对卡 Lobby Card",
+      "side": "headset",
+      "surface": "Stage 内 Planar 面板，正前方",
+      "distanceM": 1.2,
+      "sizeDp": { "default": [640, 384], "min": [560, 340], "max": [720, 420] },
+      "physicalM": [0.56, 0.34],
+      "material": "Material.Regular 玻璃",
+      "content": "标题行（等待空心点 + 「借眼 · 等待专家接入」）、地址 http://<ip>:8765（titleLarge）、PIN 4 位（displayLarge 字距 +8）、摄像头权限行、一行说明",
+      "states": ["waiting", "permDenied"]
+    },
+    {
+      "id": "visorGlass",
+      "name": "视野玻璃 Visor Glass",
+      "side": "headset",
+      "surface": "Stage 内 Planar 面板，头锁定（ECS 系统每帧按 HMD 位姿写 transform）",
+      "distanceM": 1.0,
+      "sizeDp": { "default": [1280, 720], "min": "按相机内参", "max": "按相机内参" },
+      "physicalM": [1.05, 0.6],
+      "fovDeg": [55, 33],
+      "sizingRule": "放在 1.0 m 处时 宽 = W/fx，高 = H/fy（cameraMatrix 内参）；笔迹沿相机同一条视线回到眼前",
+      "material": "无材质（纯透明）；画笔开时 2 dp chalkBlue 细框 + 4% 白色薄纱",
+      "content": "笔迹层（双方，归一化 0–1 坐标，strokeHalo 外描边）+ 专家指点光标（黄点）+ 画笔开时的芯片「在玻璃上画 · 专家同步看到」",
+      "states": ["invisible", "pen", "fading"]
+    },
+    {
+      "id": "expertGate",
+      "name": "专家台 · PIN 门 Gate",
+      "side": "expert",
+      "surface": "浏览器页面（石板底 slate）",
+      "sizePx": { "card": [340, "auto"], "viewport": [1440, 900], "viewportMin": [1024, 640] },
+      "content": "标题「连接到现场」、说明、PIN 输入（sui-text-field）、错误行、[连接]（粉笔黄）",
+      "states": ["empty", "pinError", "sessionEnded", "disconnected"]
+    },
+    {
+      "id": "expertViewfinder",
+      "name": "专家台 · 取景框 Viewfinder",
+      "side": "expert",
+      "surface": "浏览器页面 16:9 取景框",
+      "content": "实时画面 + 双方笔迹 + 专家光标；左上角「对方画笔已开」芯片；右上角「画面 3 秒前」芯片；底部提示「直接在画面上画，现场人员立刻看到 · 悬停即指点」",
+      "states": ["live", "paused", "stale", "error", "reconnecting"]
+    },
+    {
+      "id": "expertTray",
+      "name": "专家台 · 粉笔盘 Chalk Tray",
+      "side": "expert",
+      "surface": "取景框下方 56 px 玻璃条",
+      "content": "3 个颜色色块（黄 / 白 / 粉，选中显 ✓ + 白环）｜3 档粗细（点大小，选中粉笔黄底）｜撤销｜清除｜8 秒淡出开关",
+      "densityCap": "≤ 6 个控件，无文字标签",
+      "states": ["enabled", "disabled(reconnecting)"]
+    },
+    {
+      "id": "expertStatusPill",
+      "name": "专家台 · 状态签 Status Pill",
+      "side": "expert",
+      "surface": "顶栏芯片 + 延迟 / fps 文字",
+      "content": "直播 / 已暂停 / 重连中；86 ms · 14 fps（过期时 — ms · 0 fps）",
+      "states": ["live", "paused", "reconnecting", "stale"]
+    }
+  ],
+  "states": [
+    {
+      "id": "S1",
+      "name": "配对 Lobby",
+      "side": "both",
+      "reach": "启动应用；或任一方结束会话（T10）后回到此态并换新 PIN",
+      "previewHook": "初始态；或 通话条 ⏻ → 是；或 专家台 [结束] → 结束",
+      "qaCapture": "头显：配对卡在正前 1.2 m，地址 + 4 位 PIN + 「摄像头 · 已授权」行可读，通话条与玻璃均不显示。专家台：PIN 门卡片。原型断言 #hs[data-state=lobby]、#console[data-state=gate]",
+      "exits": ["T1 专家 PIN 正确 → S3", "T11 权限被拒 → S2"]
+    },
+    {
+      "id": "S2",
+      "name": "配对 · 权限被拒",
+      "side": "headset",
+      "reach": "系统相机权限弹窗选拒绝",
+      "previewHook": "配对态按 F10，或 jieyan.setPerm(false)",
+      "qaCapture": "配对卡权限行变 error 色（#FF5F52 底 + 描边）、文案「摄像头权限未授权 · 专家将看不到画面」、出现 [授权] 按钮。原型断言 #lobby.perm-denied",
+      "exits": ["T11 [授权] 成功 → S1"]
+    },
+    {
+      "id": "S3",
+      "name": "直播 Live",
+      "side": "both",
+      "reach": "专家在 PIN 门输入正确 PIN（T1）；共享恢复（T8）；重连成功（T9）",
+      "previewHook": "专家台输入 PIN（配对卡上显示的 4 位）→ [连接] 或 Enter",
+      "qaCapture": "头显：真实世界 + 视野玻璃隐形（无框）、通话条紧凑一行「● 直播 专家已连接」、红点呼吸。专家台：取景框实时画面、状态签「直播」、延迟 86 ms · 14 fps。专家在取景框拖一笔后，黄笔同一时刻出现在玻璃上同一归一化位置；悬停出黄点。原型断言 #hs[data-state=live]、#glass 无 .pen",
+      "exits": ["T3 ✎ 开 → S4", "T8 共享关 → S5", "T9 socket 断 → S6", "T10 结束 → S9", "T12 无帧 → S7 / 读回失败 → S8"]
+    },
+    {
+      "id": "S4",
+      "name": "直播 · 我在画",
+      "side": "both",
+      "reach": "直播中按通话条 ✎（T3）",
+      "previewHook": "点通话条 ✎；然后在玻璃上拖动",
+      "qaCapture": "头显：玻璃显出 2 dp chalkBlue 细框 + 芯片「在玻璃上画 · 专家同步看到」，通话条 ✎ 选中、状态「画笔开 · 在玻璃上画」、↶ 可用；拖一笔为蓝色。专家台：左上芯片「对方画笔已开」，取景框同步出现蓝笔。原型断言 #glass.pen、#strip-pen[checked]、#console.worker-pen",
+      "exits": ["✎ 关 → S3"]
+    },
+    {
+      "id": "S5",
+      "name": "已暂停共享 Paused",
+      "side": "both",
+      "reach": "直播中现场人员按通话条 ◉ 关共享（T8）",
+      "previewHook": "点通话条 ◉（共享开关）",
+      "qaCapture": "头显：红点熄灭、通话条状态「已暂停共享」为 alert 色 #FF8A1F、◉ 图标变 ◌。专家台：取景框遮罩「⏸ 对方已暂停共享」+ 副文案，状态签「已暂停」。原型断言 #hs[data-state=paused]、#vf-paused 可见",
+      "exits": ["◉ 再开 → S3", "T9 → S6", "T10 → S9"]
+    },
+    {
+      "id": "S6",
+      "name": "重连中 Reconnecting",
+      "side": "both",
+      "reach": "WebSocket 断开（T9）",
+      "previewHook": "按 F9（再按一次恢复）；jieyan.timeoutReconnect() 模拟 30 s 超时",
+      "qaCapture": "头显：通话条状态「重连中…」alert 色 + ↻ 图标 + 条底 2 dp 线性进度（#FF8A1F），画笔 / 撤销 / 清除不可用。专家台：遮罩「重连中…」+ 环形进度，粉笔盘整体禁用（LocalDisableAlpha 0.3）。原型断言 #hs[data-state=reconnecting]、#strip-progress 可见",
+      "exits": ["重连成功 → 回前态（S3 / S5）", "30 s 超时 → S1（新 PIN）"]
+    },
+    {
+      "id": "S7",
+      "name": "直播 · 画面过期（fallback）",
+      "side": "both",
+      "reach": "直播中连续 3 s 无新帧（T12）",
+      "previewHook": "直播态按 F8",
+      "qaCapture": "专家台：取景框灰化（grayscale + 变暗）、右上芯片「⏱ 画面 3 秒前」alert 底、延迟显示「— ms · 0 fps」；笔迹仍可画。头显：通话条状态「画面 3 秒前」。原型断言 #console.data-fallback、#vf-stale 可见",
+      "exits": ["新帧到达 → S3"]
+    },
+    {
+      "id": "S8",
+      "name": "直播 · 画面不可用（error）",
+      "side": "both",
+      "reach": "读回失败 / 相机不可用（T12）",
+      "previewHook": "直播态按 F10（再按一次恢复）",
+      "qaCapture": "专家台：遮罩「⚠ 画面不可用」+ 副文案「头显未能读取摄像头画面（权限或读回失败）」。头显：红点熄灭，通话条状态「画面不可用 · 读回失败」error 色 #FF5F52。原型断言 #console.data-error、#vf-error 可见",
+      "exits": ["读回恢复 → S3", "T10 → S9"]
+    },
+    {
+      "id": "S9",
+      "name": "通话条 · 结束确认（内联）",
+      "side": "headset",
+      "reach": "任意直播 / 暂停态按通话条 ⏻（T10，唯一需要显式确认的转换）",
+      "previewHook": "点通话条 ⏻",
+      "qaCapture": "通话条隐藏状态与 5 键，改显「结束会话并停止共享？」+ [是]（粉笔黄）+ [否]，条体前移 +8 dp（原型为上移 6 px）。Stage 内不用浮层对话框。原型断言 #strip.confirming",
+      "exits": ["是 → S1（清笔迹、停共享、新 PIN）", "否 → 回前态"]
+    },
+    {
+      "id": "E1",
+      "name": "专家台 · PIN 门",
+      "side": "expert",
+      "reach": "专家浏览器打开 http://<ip>:8765；会话结束或断线后也回到此页",
+      "previewHook": "初始态；输错 PIN 看错误；结束会话后看「会话已结束」",
+      "qaCapture": "石板底上一张 340 px 卡片：「连接到现场」、说明、PIN 输入框、[连接] 粉笔黄。子状态：PIN 错误（输入框 error + 红字「PIN 不对，再看一眼头显上的数字」）、会话已结束、连接已断开。原型断言 #console[data-state=gate]、#gate-pin[error]",
+      "exits": ["PIN 正确 → S3"]
+    },
+    {
+      "id": "E2",
+      "name": "专家台 · 清除提示（Snackbar）",
+      "side": "expert",
+      "reach": "专家按粉笔盘 清除（T6）",
+      "previewHook": "直播态按粉笔盘 清除",
+      "qaCapture": "底部 sui-snackbar「已清除全部笔迹 · 撤销」，点撤销笔迹回来；头显侧笔迹同步清零。原型断言 #snack 有内容",
+      "exits": ["超时或撤销 → S3"]
+    },
+    {
+      "id": "E3",
+      "name": "专家台 · 结束会话对话框",
+      "side": "expert",
+      "reach": "专家按顶栏 [结束]（T10）",
+      "previewHook": "点顶栏 [结束]",
+      "qaCapture": "sui-alert-dialog「结束会话？」+ 文案「头显会停止共享并回到配对界面，笔迹全部清除。」+ [取消] / [结束]（error 红）。注意对话框走浏览器 top layer，截图工具可能拍不到，用 DOM :popover-open 断言",
+      "exits": ["结束 → S1 + E1(会话已结束)", "取消 → S3"]
+    }
+  ],
+  "interactions": [
+    { "id": "T1", "name": "接入", "from": "S1", "to": "S3", "trigger": "专家输入正确 PIN", "confirm": false },
+    { "id": "T2", "name": "专家画", "from": "S3", "to": "S3", "trigger": "专家在取景框按住拖动 → 黄笔同时出现在玻璃上", "confirm": false },
+    { "id": "T3", "name": "现场人员画", "from": "S3", "to": "S4", "trigger": "通话条 ✎ 开后在玻璃上捏合拖动 → 蓝笔同步到专家台", "confirm": false },
+    { "id": "T4", "name": "指点", "from": "S3", "to": "S3", "trigger": "专家鼠标悬停取景框 → 玻璃上同一归一化位置出黄点，700 ms 后熄灭；≤ 20 Hz", "confirm": false },
+    { "id": "T5", "name": "撤销", "from": "S3", "to": "S3", "trigger": "专家 ↶ / Ctrl+Z 撤自己上一笔；现场人员 ↶ 撤自己上一笔", "confirm": false },
+    { "id": "T6", "name": "清除", "from": "S3", "to": "S3", "trigger": "任一方 🗑 清掉全部笔迹；专家台 Snackbar 可撤销", "confirm": false },
+    { "id": "T7", "name": "自动淡出", "from": "S3", "to": "S3", "trigger": "专家台开关开：每笔画完 8 s 后 2 s 内淡出（默认关）", "confirm": false },
+    { "id": "T8", "name": "暂停 / 恢复共享", "from": "S3", "to": "S5", "trigger": "现场人员按 ◉ / ◌；LIVE 点立即熄灭", "confirm": false },
+    { "id": "T9", "name": "断线 / 重连 / 超时", "from": "S3|S5", "to": "S6", "trigger": "socket 断 → 重连中；恢复回前态；30 s 超时回 S1", "confirm": false },
+    { "id": "T10", "name": "结束会话", "from": "*", "to": "S1", "trigger": "通话条 ⏻（内联确认）/ 专家台 [结束]（对话框）", "confirm": true },
+    { "id": "T11", "name": "权限", "from": "S1", "to": "S2", "trigger": "系统权限结果；[授权] 成功回 S1", "confirm": false },
+    { "id": "T12", "name": "画面不可用 / 过期", "from": "S3", "to": "S7|S8", "trigger": "连续 3 s 无帧 → 过期；读回失败 → 不可用", "confirm": false }
+  ],
+  "palette": {
+    "theme": "SpatialUI vibrant + 根面 Material.Regular 玻璃",
+    "colorScheme": {
+      "fillPrimary": "inherit", "fillSecondary": "inherit", "fillTertiary": "inherit", "fillLight": "inherit",
+      "labelPrimary": "inherit", "labelPrimaryLight": "inherit", "labelSecondary": "inherit", "labelTertiary": "inherit", "labelQuaternary": "inherit",
+      "lightenHover": "inherit", "lightenPressed": "inherit",
+      "error": "#FF5F52", "alert": "#FF8A1F", "passable": "#7CF2A3", "interaction": "#FFE14D",
+      "dividerLine": "inherit"
+    },
+    "brandTokens": {
+      "chalkYellow": "#FFE14D", "chalkWhite": "#F6F2E6", "chalkPink": "#FF8FB1", "chalkBlue": "#8CD5FF",
+      "inkOnChalk": "#1E1A0E", "liveRed": "#FF3B30", "slate": "#20262A", "slateDeep": "#161B1E", "strokeHalo": "rgba(0,0,0,.45)"
+    },
+    "semantic": [
+      { "status": "共享中", "color": "liveRed", "cue": "实心圆点 + 呼吸", "copy": "直播 / LIVE" },
+      { "status": "已连接", "color": "passable", "cue": "实心小圆", "copy": "专家已连接" },
+      { "status": "等待", "color": "labelSecondary", "cue": "空心圆", "copy": "等待专家接入" },
+      { "status": "对方画笔开", "color": "chalkBlue", "cue": "✎ 芯片", "copy": "对方画笔已开" },
+      { "status": "重连中", "color": "alert", "cue": "↻ + 线性进度", "copy": "重连中…" },
+      { "status": "已暂停共享", "color": "alert", "cue": "⏸", "copy": "已暂停共享" },
+      { "status": "画面过期", "color": "alert", "cue": "灰化 + 时间", "copy": "画面 3 秒前" },
+      { "status": "错误", "color": "error", "cue": "⚠", "copy": "摄像头权限未授权 / PIN 错误 / 画面不可用" }
+    ]
+  },
+  "typography": {
+    "font": "Noto Sans + Noto Sans SC（应用内打包）",
+    "roles": {
+      "displayLarge": "40/54 Bold，PIN，字距 +8",
+      "titleLarge": "20/26 SemiBold，地址",
+      "titleMedium": "16/20，卡片标题",
+      "bodyMedium": "14/18 Medium，正文 / 通话条状态",
+      "labelMedium": "12/16 SemiBold，芯片、时间戳"
+    },
+    "rule": "中文 ≤ 17 sp 一律 Medium"
+  },
+  "spatialUiMap": {
+    "callStripKeys": "sui-toggle-icon-button（✎ ◉）/ sui-icon-button（↶ 🗑 ⏻）size=min",
+    "stripStatus": "sui-text bodyMedium + sui-dot-badge",
+    "inlineConfirm": "sui-button ×2（Stage 内不用浮层对话框）",
+    "lobbyGrant": "sui-button small container=interaction",
+    "pinInput": "sui-text-field（error）",
+    "swatches": "sui-icon-button container-color=粉笔色，选中 ✓ + 白环",
+    "widths": "sui-icon-button ×3 点图标，选中 interaction 底",
+    "fade": "sui-switch",
+    "chips": "sui-chip small（状态签 / 对方画笔 / 画面过期 / 在玻璃上画）",
+    "progress": "sui-linear-progress（通话条）/ sui-circular-progress（取景框）",
+    "expertDialog": "sui-alert-dialog + sui-button",
+    "expertSnackbar": "sui-snackbar-host",
+    "custom": "视野玻璃笔迹层 / 光标 / 细框 = 自定义 Canvas / svg（领域内容，不是控件）"
+  },
+  "verification": {
+    "emulatorCanVerify": ["配对", "双向笔迹", "撤销 / 清除 / 淡出", "暂停", "重连", "确认流（合成相机源 + 固定内参）"],
+    "deviceOnly": ["VST 读回帧率与延迟", "画面比例", "内参取用与玻璃对齐误差", "头锁定手感"]
+  },
+  "reviewNotes": [
+    "2026-10-19 设计包 v2 评审 pass（design-doc.md §6）；v1「一画即冻结」被用户否决，v2 画面不冻结",
+    "2026-10-20 设计站：从 design-doc.md 整理出本 JSON（states S1–S9 + E1–E3），内容未改动设计决定",
+    "2026-10-20 用户改名：借眼 Jieyan → 千里眼 Qianliyan（研发站只改显示名；appId / 包名 io.embodit.jieyan 不变；design-doc.md 等设计稿保留旧名作历史记录）"
+  ]
+}

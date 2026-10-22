@@ -1,0 +1,715 @@
+<title>借眼 Jieyan 样稿</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap">
+<style>
+/* 布局：单栏规格书（石板底），每个面板 / 状态一屏；组件态 1 dp = 1 px 原尺寸，全景按 16:9 缩放 */
+:root{
+  --bg:#14181B; --bg-2:#1B2024; --panel:#20262A; --panel-2:#262D32;
+  --ink:#F2F4F5; --ink-2:rgba(242,244,245,.74); --ink-3:rgba(242,244,245,.52); --line:rgba(255,255,255,.12);
+  --chalk-yellow:#FFE14D; --chalk-white:#F6F2E6; --chalk-pink:#FF8FB1; --chalk-blue:#8CD5FF; --ink-on-chalk:#1E1A0E;
+  --live-red:#FF3B30; --slate:#20262A; --slate-deep:#161B1E; --halo:rgba(0,0,0,.45);
+  --error:#FF5F52; --alert:#FF8A1F; --passable:#7CF2A3; --interaction:#FFE14D;
+  --glass:rgba(255,255,255,.34); --fill-light:rgba(255,255,255,.15); --fill-tertiary:rgba(255,255,255,.08);
+  --label-primary:rgba(255,255,255,.94); --label-secondary:rgba(255,255,255,.80); --label-tertiary:rgba(255,255,255,.65); --label-quaternary:rgba(255,255,255,.40);
+  --font:"Noto Sans","Noto Sans SC","Noto Sans CJK SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 80px}
+a{color:var(--chalk-blue)}
+h1{font-size:30px;line-height:1.2;margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.25;margin:0 0 4px;text-wrap:balance}
+h3{font-size:16px;margin:28px 0 10px;color:var(--ink);text-wrap:balance}
+p{margin:0 0 10px;max-width:72ch}
+.muted{color:var(--ink-2)}
+.tiny{font-size:12px;color:var(--ink-3)}
+code{font-family:var(--mono);font-size:.92em;background:var(--fill-tertiary);padding:1px 6px;border-radius:6px}
+.hdr{padding:28px 0 18px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk-yellow);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:var(--fill-light);font-size:12px;font-weight:600;color:var(--label-primary);white-space:nowrap}
+.chip.y{background:var(--chalk-yellow);color:var(--ink-on-chalk)}
+.chip.b{background:var(--chalk-blue);color:var(--ink-on-chalk)}
+.chip.a{background:var(--alert);color:var(--ink-on-chalk)}
+.chip.e{background:var(--error);color:#fff}
+.chip.r{background:rgba(255,59,48,.85);color:#fff}
+.chip.g{background:rgba(255,255,255,.35);color:var(--ink-on-chalk)}
+.howto{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.howto .big{font-size:15px;font-weight:600}
+.howto .big b{color:var(--chalk-yellow)}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(20,24,27,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+nav.toc ul{list-style:none;margin:0;padding:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.toc li a{display:block;padding:10px 10px;font-size:13px;font-weight:600;color:var(--ink-2);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+nav.toc li a:hover{color:var(--ink);border-color:var(--chalk-yellow)}
+section{padding:44px 0 8px;border-bottom:1px solid var(--line)}
+.sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.sec-head .num{font-family:var(--mono);font-size:13px;color:var(--chalk-yellow);font-weight:600}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.04em;color:var(--ink-3);font-weight:600;background:var(--panel)}
+tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono);color:var(--chalk-yellow);white-space:nowrap}
+td.nm{font-weight:600;white-space:nowrap}
+td.side{white-space:nowrap;color:var(--ink-2)}
+.go{appearance:none;border:0;background:var(--fill-light);color:var(--label-primary);font:600 12px/1 var(--font);padding:8px 12px;border-radius:14px;cursor:pointer;white-space:nowrap}
+.go:hover{background:rgba(255,255,255,.26)}
+.go:focus-visible{outline:2px solid var(--chalk-yellow);outline-offset:2px}
+.go.y{background:var(--chalk-yellow);color:var(--ink-on-chalk)}
+.dims{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:12px;color:var(--ink-2);margin:6px 0 12px}
+.dims b{color:var(--ink);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.card h4{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h4 .st{font-family:var(--mono);font-size:11px;color:var(--chalk-yellow)}
+.note{font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.note b{color:var(--ink)}
+
+/* ───── 全景（16:9） ───── */
+.scene{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:16px;overflow:hidden;background:#000;user-select:none}
+.scene svg.room{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scene .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.5) 100%)}
+.gl{position:absolute;left:10%;top:10%;width:80%;height:80%;border-radius:12px}
+.gl.ghost{outline:1.5px dashed rgba(255,255,255,.55);outline-offset:-1px}
+.gl.pen{box-shadow:inset 0 0 0 2px rgba(140,213,255,.85),0 0 0 1px rgba(0,0,0,.25);background:rgba(255,255,255,.04)}
+.gl.fade .strokes{opacity:.45}
+.strokes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.strokes polyline,.strokes ellipse{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hud{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--chalk-yellow);box-shadow:0 0 0 2px #fff,0 0 14px rgba(255,225,77,.85)}
+.ovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;font-family:var(--mono)}
+.ovl line,.ovl path{stroke:#fff;stroke-width:2;fill:none}
+.ovl text{fill:#fff;font-size:24px;font-weight:600;paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:6px}
+.tag{position:absolute;font-size:11px;font-weight:600;line-height:1;padding:6px 9px;border-radius:10px;background:rgba(0,0,0,.62);color:#fff;border:1px dashed rgba(255,255,255,.6);white-space:nowrap;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
+.glass{background:var(--glass);backdrop-filter:blur(50px) saturate(1.18);-webkit-backdrop-filter:blur(50px) saturate(1.18);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 18px 54px rgba(0,0,0,.24)}
+.sstrip{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);width:54%;height:52px;border-radius:26px;display:flex;align-items:center;gap:2px;padding:0 8px 0 14px;z-index:8}
+.sstrip .st{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--label-primary)}
+.sstrip .k{width:36px;height:36px}
+.sstrip .k svg{width:20px;height:20px}
+.slobby{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46%;min-width:300px;padding:18px 22px 16px;border-radius:28px;display:flex;flex-direction:column;gap:6px;z-index:7;color:var(--label-primary)}
+.slobby .t{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.slobby .lb{font-size:11px;color:var(--label-secondary);font-weight:600}
+.slobby .url{font-size:17px;line-height:22px;font-weight:600}
+.slobby .pin{font-size:32px;line-height:42px;font-weight:700;letter-spacing:6px}
+.slobby .perm{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:14px;background:rgba(0,0,0,.18);font-size:11.5px;font-weight:600;min-height:36px}
+.slobby .hint{font-size:11px;color:var(--label-secondary)}
+.ico{width:22px;height:22px;display:block;fill:currentColor}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--live-red);flex:none}
+.dot.live{animation:breathe 1.6s ease-in-out infinite}
+.dot.off{opacity:.25;animation:none}
+.dot.hollow{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+.k{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:var(--label-primary);flex:none;position:relative}
+.k.on{background:var(--interaction);color:var(--ink-on-chalk)}
+.k.dis{opacity:.3}
+.k svg{fill:currentColor}
+
+/* ───── 组件态 1:1（1 dp = 1 px） ───── */
+.mock{position:relative;width:100%;min-width:660px;height:170px;border-radius:14px;overflow:hidden;background:#000}
+.mock svg.room{position:absolute;inset:0;width:100%;height:100%}
+.scroller{overflow-x:auto;border-radius:14px}
+.strip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:616px;height:112px;border-radius:56px;display:flex;align-items:center;gap:0;padding:0 20px 0 28px;color:var(--label-primary)}
+.strip .st{display:flex;align-items:center;gap:12px;flex:1;min-width:0;font-size:14px;line-height:18px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .st.alert{color:var(--alert)}
+.strip .st.error{color:var(--error)}
+.strip .keys{display:flex;gap:0;align-items:center}
+.strip .k{width:56px;height:56px}
+.strip .k svg{width:24px;height:24px}
+.strip .prog{position:absolute;left:40px;right:40px;bottom:6px;height:2px;border-radius:1px;background:rgba(255,255,255,.2);overflow:hidden}
+.strip .prog i{position:absolute;top:0;bottom:0;width:40%;background:var(--alert);animation:slide 1.4s linear infinite}
+@keyframes slide{0%{left:-40%}100%{left:100%}}
+.strip.confirming{transform:translate(-50%,calc(-50% - 8px))}
+.strip .confirm{display:flex;align-items:center;gap:12px;flex:1;font-size:14px;font-weight:500}
+.strip .confirm span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 18px;border-radius:18px;background:var(--fill-light);color:var(--label-primary);font-size:13px;font-weight:600;white-space:nowrap}
+.btn.y{background:var(--interaction);color:var(--ink-on-chalk)}
+.btn.e{background:var(--error);color:#fff}
+.btn.lg{height:44px;padding:0 24px;border-radius:22px;font-size:14px}
+.lobby{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:640px;height:384px;border-radius:32px;padding:26px 30px 22px;display:flex;flex-direction:column;gap:8px;color:var(--label-primary)}
+.lobby .t{display:flex;align-items:center;gap:10px;font-size:16px;line-height:20px;font-weight:600}
+.lobby .lb{font-size:12px;line-height:16px;font-weight:600;color:var(--label-secondary)}
+.lobby .url{font-size:20px;line-height:26px;font-weight:600;letter-spacing:.01em}
+.lobby .pin{font-size:40px;line-height:54px;font-weight:700;letter-spacing:8px}
+.lobby .perm{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-radius:16px;background:rgba(0,0,0,.18);font-size:13px;font-weight:600;min-height:44px}
+.lobby .perm .pm{flex:1}
+.lobby .perm.denied{background:rgba(255,95,82,.22);box-shadow:inset 0 0 0 1px rgba(255,95,82,.65)}
+.lobby .hint{font-size:12px;line-height:18px;color:var(--label-secondary)}
+.mock.tall{height:440px}
+
+/* ───── 专家台 ───── */
+.console{position:relative;background:var(--slate);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:16/10;min-height:420px;max-width:100%;color:#fff}
+.chrome{height:34px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;background:#2a3135;font-size:12px;color:rgba(255,255,255,.6)}
+.chrome .d i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#5a6368;margin-right:4px}
+.chrome .addr{flex:1;background:#1c2225;border-radius:8px;padding:4px 10px;color:rgba(255,255,255,.8);font-family:var(--mono)}
+.topbar{height:52px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px}
+.topbar .brand{font-weight:700;font-size:15px;white-space:nowrap}
+.topbar .lat{font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
+.topbar .sp{flex:1}
+.cmain{flex:1;display:flex;padding:0 16px 76px;min-height:0}
+.vf{position:relative;width:100%;aspect-ratio:16/9;background:var(--slate-deep);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);max-width:100%}
+.vf svg.room{position:absolute;inset:0;width:100%;height:100%}
+.vf.stale svg.room{filter:grayscale(.9) brightness(.65)}
+.vf .hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,.85);background:rgba(0,0,0,.42);padding:5px 10px;border-radius:12px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis}
+.vf .tl{position:absolute;left:10px;top:10px}
+.vf .tr{position:absolute;right:10px;top:10px}
+.vf .over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:rgba(22,27,30,.74);backdrop-filter:blur(6px);font-size:15px;font-weight:600;text-align:center;padding:12px}
+.vf .over .big{font-size:26px}
+.vf .over .sub{font-size:11.5px;font-weight:500;opacity:.75}
+.ring{width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tray{position:relative;height:56px;border-radius:28px;display:inline-flex;align-items:center;gap:8px;padding:0 14px 0 12px;white-space:nowrap;color:var(--label-primary);max-width:100%}
+.tray .sep{width:1px;height:24px;background:rgba(255,255,255,.28)}
+.tray .sw{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-on-chalk);margin:0 2px}
+.tray .sw.sel{box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(0,0,0,.35)}
+.tray .sw svg{width:20px;height:20px;fill:currentColor;opacity:0}
+.tray .sw.sel svg{opacity:1}
+.tray .wd{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--label-primary);margin:0 1px}
+.tray .wd.sel{background:var(--interaction);color:var(--ink-on-chalk)}
+.tray .wd svg{width:22px;height:22px;fill:currentColor}
+.tray .k{width:40px;height:40px}
+.tray .k svg{width:22px;height:22px}
+.tray .fade{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+.sw-toggle{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,.3);position:relative}
+.sw-toggle i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+.sw-toggle.on{background:var(--chalk-yellow)}
+.sw-toggle.on i{left:21px;background:var(--ink-on-chalk)}
+.tray.dis>*:not(.lab){opacity:.3}
+.ctray{position:absolute;left:50%;bottom:12px;transform:translateX(-50%) scale(.82);transform-origin:bottom center;z-index:3}
+.gate{width:340px;max-width:100%;padding:28px 28px 24px;display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.06);border-radius:24px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);color:#fff}
+.gate .title{font-size:24px;line-height:30px;font-weight:700}
+.gate .sub{font-size:13px;color:rgba(255,255,255,.65);line-height:1.5}
+.gate .field{height:44px;border-radius:12px;background:var(--fill-light);display:flex;align-items:center;padding:0 14px;color:var(--label-quaternary);font-size:15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.gate .field.err{box-shadow:inset 0 0 0 2px var(--error);color:var(--label-primary)}
+.gate .error{font-size:12px;color:var(--error);min-height:18px;line-height:18px}
+.gate .error.neutral{color:rgba(255,255,255,.65)}
+.gate .actions{display:flex;justify-content:flex-end}
+.slateboard{background:var(--slate);border-radius:18px;padding:22px;display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.dialog{width:360px;max-width:100%;padding:24px 24px 18px;border-radius:24px;background:#2a3135;box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1);color:#fff;display:flex;flex-direction:column;gap:10px}
+.dialog .t{font-size:18px;font-weight:700}
+.dialog .m{font-size:13px;color:rgba(255,255,255,.7);line-height:1.5}
+.dialog .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.snack{display:inline-flex;align-items:center;gap:18px;height:48px;padding:0 10px 0 18px;border-radius:14px;background:#EDEFF0;color:#1E1A0E;font-size:13.5px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.snack b{color:#8a5a00;font-weight:700;padding:6px 10px;border-radius:10px}
+
+/* ───── 色板 / 字体 ───── */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.swatch{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg-2)}
+.swatch .c{height:46px;background-image:linear-gradient(45deg,#2a3135 25%,transparent 25%,transparent 75%,#2a3135 75%),linear-gradient(45deg,#2a3135 25%,transparent 25%,transparent 75%,#2a3135 75%);background-size:12px 12px;background-position:0 0,6px 6px;background-color:#1c2225;position:relative}
+.swatch .c i{position:absolute;inset:0}
+.swatch .n{padding:8px 10px 2px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.swatch .v{padding:0 10px 2px;font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.swatch .u{padding:0 10px 8px;font-size:11.5px;color:var(--ink-2)}
+.type .row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.type .row .r{font-family:var(--mono);font-size:12px;color:var(--chalk-yellow)}
+.type .row .s{color:var(--label-primary)}
+.type .row .meta{font-size:12px;color:var(--ink-3);display:block}
+@media (max-width:560px){.type .row{grid-template-columns:1fr}}
+
+/* ───── 原型 ───── */
+.proto-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 12px}
+.proto-bar .lbl{font-size:12px;color:var(--ink-3);margin-right:4px}
+iframe#proto{width:100%;height:780px;border:1px solid var(--line);border-radius:16px;background:#0f1214;display:block}
+#proto-status{font-size:12px;color:var(--ink-3);margin-top:8px;min-height:18px}
+.kbd{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:6px;background:var(--fill-tertiary);border:1px solid var(--line)}
+.foot{padding:40px 0 20px;color:var(--ink-3);font-size:12.5px}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></symbol>
+    <symbol id="i-clear" viewBox="0 0 24 24"><path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0zM4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-4.95-4.95-4.95 4.95z"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></symbol>
+    <symbol id="i-camoff" viewBox="0 0 24 24"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+    <symbol id="i-d1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="i-d2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/></symbol>
+    <symbol id="i-d3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></symbol>
+  </defs>
+</svg>
+<template id="scene-tpl">
+<svg xmlns="http://www.w3.org/2000/svg" class="room" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <rect x="-200" y="-200" width="2000" height="860" fill="#b9c3c7"/>
+  <rect x="-200" y="-200" width="2000" height="330" fill="#c9d2d5"/>
+  <rect x="-200" y="640" width="2000" height="500" fill="#6c675f"/>
+  <rect x="190" y="200" width="310" height="196" rx="8" fill="#2d3134"/>
+  <rect x="204" y="214" width="282" height="156" fill="#34505b"/>
+  <rect x="214" y="226" width="150" height="10" fill="#6fa0b0"/><rect x="214" y="246" width="110" height="10" fill="#5b8696"/><rect x="214" y="266" width="200" height="10" fill="#5b8696"/>
+  <rect x="325" y="396" width="40" height="38" fill="#2d3134"/><rect x="285" y="432" width="120" height="12" rx="4" fill="#2d3134"/>
+  <rect x="-200" y="556" width="2000" height="62" fill="#b58b56"/>
+  <rect x="-200" y="618" width="2000" height="110" fill="#8a683f"/>
+  <rect x="-200" y="556" width="2000" height="6" fill="#d2a86e"/>
+  <ellipse cx="560" cy="556" rx="112" ry="22" fill="#474c52"/>
+  <rect x="520" y="380" width="80" height="176" rx="12" fill="#e9e6df"/>
+  <circle cx="560" cy="380" r="46" fill="#8d9298"/>
+  <g transform="rotate(35 560 380)"><rect x="530" y="150" width="60" height="240" rx="14" fill="#e9e6df"/></g>
+  <circle cx="692" cy="192" r="38" fill="#8d9298"/>
+  <line x1="692" y1="192" x2="872" y2="280" stroke="#e9e6df" stroke-width="52" stroke-linecap="round"/>
+  <circle cx="872" cy="280" r="24" fill="#8d9298"/>
+  <line x1="872" y1="280" x2="914" y2="304" stroke="#555a60" stroke-width="12" stroke-linecap="round"/>
+  <line x1="872" y1="280" x2="916" y2="262" stroke="#555a60" stroke-width="12" stroke-linecap="round"/>
+  <rect x="980" y="330" width="360" height="226" rx="10" fill="#353a40"/>
+  <rect x="1000" y="350" width="320" height="60" rx="6" fill="#23272c"/>
+  <text x="1014" y="391" font-size="30" fill="#9fd3ff" font-family="ui-monospace,Consolas,monospace">CTRL-02   RUN</text>
+  <g fill="#1b1e22"><rect x="1010" y="438" width="54" height="40" rx="4"/><rect x="1080" y="438" width="54" height="40" rx="4"/><rect x="1150" y="438" width="54" height="40" rx="4"/><rect x="1220" y="438" width="54" height="40" rx="4"/></g>
+  <g fill="#aeb4ba" font-size="15" font-family="ui-monospace,Consolas,monospace"><text x="1016" y="502">ETH0</text><text x="1086" y="502">ETH1</text><text x="1156" y="502">CAN</text><text x="1226" y="502">PWR</text></g>
+  <circle cx="1037" cy="530" r="9" fill="#5cf08a"/><circle cx="1107" cy="530" r="9" fill="#5cf08a"/><circle cx="1177" cy="530" r="9" fill="#ff5a4a"/><circle cx="1247" cy="530" r="9" fill="#4a4f55"/>
+  <path d="M1000 556 C 900 600, 760 600, 660 566" stroke="#1f2225" stroke-width="10" fill="none"/>
+  <path d="M1177 480 C 1177 600, 1290 650, 1420 612" stroke="#c43b2e" stroke-width="8" fill="none"/>
+  <rect x="1370" y="536" width="120" height="16" rx="4" fill="#5e6369"/>
+  <rect x="30" y="470" width="160" height="86" rx="6" fill="#9a9690"/><rect x="40" y="480" width="140" height="66" rx="4" fill="#7d7973"/>
+</svg>
+</template>
+
+<div class="wrap">
+
+<header class="hdr">
+  <div class="eyebrow">空间应用黑灯工厂 · 站 2 设计 · 门 B 方案确认</div>
+  <h1>借眼 Jieyan · 样稿 v2</h1>
+  <p class="muted">远程协助：戴 Swan 的现场人员把眼前的实时画面分享给电脑前的专家。专家在视频上画，笔迹同一时刻落在现场人员眼前一块跟着视野走的透明玻璃上，位置对得上；现场人员也能回画。画面不冻结。</p>
+  <div class="chips">
+    <span class="chip">容器 STAGE_MIXED · Full Space 透视</span>
+    <span class="chip">骨架 D</span>
+    <span class="chip">SpatialUI vibrant · Material.Regular 玻璃</span>
+    <span class="chip">Noto Sans / Noto Sans SC</span>
+    <span class="chip">设计包 v2 · 评审 pass · 2026-10-19</span>
+    <span class="chip">包名 io.embodit.jieyan</span>
+  </div>
+  <div class="howto">
+    <div class="big">怎么评论：在本页任意位置留评论，写 <b>「过」</b> 或 <b>「改：你的意见」</b>。</div>
+    <div class="tiny">门 B 只认这份样稿上的评论；聊天里说的不算。「过」→ 进研发站；「改」→ 我改完回到同一链接，再挂回来等你。可以按章节号指位置，例如「改：3.2 通话条的红点太小」。</div>
+  </div>
+</header>
+
+<nav class="toc"><ul>
+  <li><a href="#s1">1 状态总览</a></li>
+  <li><a href="#s2">2 空间布局</a></li>
+  <li><a href="#s3">3 视野玻璃</a></li>
+  <li><a href="#s4">4 通话条</a></li>
+  <li><a href="#s5">5 配对卡</a></li>
+  <li><a href="#s6">6 专家台</a></li>
+  <li><a href="#s7">7 异常态</a></li>
+  <li><a href="#s8">8 色板与字体</a></li>
+  <li><a href="#s9">9 可交互原型</a></li>
+</ul></nav>
+
+<!-- ═══════════ 1 状态总览 ═══════════ -->
+<section id="s1">
+  <div class="sec-head"><span class="num">1</span><h2>状态总览</h2><span class="muted">设计包 states[] 逐行：名字 · 怎么到达 · QA 怎么截。最后一列把下面的原型跳到该态。</span></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>状态</th><th>端</th><th>怎么到达</th><th>QA 怎么截（必须看到）</th><th>原型</th></tr></thead>
+    <tbody>
+      <tr><td class="id">S1</td><td class="nm">配对 Lobby</td><td class="side">双端</td><td>启动应用；或任一方结束会话（T10）后回到此态，换新 PIN</td><td>头显：配对卡在正前 1.2 m，地址 + 4 位 PIN + 「摄像头 · 已授权」行可读；通话条与玻璃都不显示。专家台：PIN 门卡片。断言 <code>#hs[data-state=lobby]</code> <code>#console[data-state=gate]</code></td><td><button class="go" data-goto="S1">跳到</button></td></tr>
+      <tr><td class="id">S2</td><td class="nm">配对 · 权限被拒</td><td class="side">头显</td><td>系统相机权限弹窗选拒绝（T11）</td><td>配对卡权限行变 error 色底 + 描边，文案「摄像头权限未授权 · 专家将看不到画面」，出现 [授权]。断言 <code>#lobby.perm-denied</code></td><td><button class="go" data-goto="S2">跳到</button></td></tr>
+      <tr><td class="id">S3</td><td class="nm">直播 Live</td><td class="side">双端</td><td>专家输入正确 PIN（T1）；共享恢复（T8）；重连成功（T9）</td><td>头显：玻璃隐形（无框），通话条一行「● 直播 专家已连接」，红点呼吸。专家台：取景框实时画面、状态签「直播」、86 ms · 14 fps。专家拖一笔 → 黄笔同一时刻出现在玻璃上同一归一化位置；悬停 → 玻璃上出黄点。断言 <code>#hs[data-state=live]</code>，<code>#glass</code> 无 <code>.pen</code></td><td><button class="go y" data-goto="S3">跳到</button></td></tr>
+      <tr><td class="id">S4</td><td class="nm">直播 · 我在画</td><td class="side">双端</td><td>直播中按通话条 ✎（T3）</td><td>头显：玻璃显出 2 dp 蓝细框 + 芯片「在玻璃上画 · 专家同步看到」，✎ 选中、状态「画笔开 · 在玻璃上画」，拖一笔为蓝色。专家台：左上芯片「对方画笔已开」，取景框同步出现蓝笔。断言 <code>#glass.pen</code> <code>#strip-pen[checked]</code> <code>#console.worker-pen</code></td><td><button class="go" data-goto="S4">跳到</button></td></tr>
+      <tr><td class="id">S5</td><td class="nm">已暂停共享 Paused</td><td class="side">双端</td><td>直播中现场人员按通话条 ◉ 关共享（T8）</td><td>头显：红点熄灭、状态「已暂停共享 · 专家看不到画面」alert 色、◉ 变 ◌。专家台：遮罩「⏸ 对方已暂停共享」，状态签「对方已暂停共享」。断言 <code>#hs[data-state=paused]</code> <code>#vf-paused</code> 可见</td><td><button class="go" data-goto="S5">跳到</button></td></tr>
+      <tr><td class="id">S6</td><td class="nm">重连中 Reconnecting</td><td class="side">双端</td><td>WebSocket 断开（T9）。恢复回前态；30 s 超时回 S1</td><td>头显：状态「重连中…」alert 色 + 条底线性进度；✎ ↶ 🗑 不可用。专家台：遮罩「重连中…」+ 环形进度，粉笔盘整体 30% 透明。断言 <code>#hs[data-state=reconnecting]</code> <code>#strip-progress</code> 可见</td><td><button class="go" data-goto="S6">跳到</button></td></tr>
+      <tr><td class="id">S7</td><td class="nm">直播 · 画面过期</td><td class="side">双端</td><td>直播中连续 3 s 无新帧（T12 fallback）</td><td>专家台：取景框灰化，右上芯片「⏱ 画面 3 秒前」alert 底，延迟「— ms · 0 fps」，仍可画。头显：状态「专家已连接 · 画面 3 秒前」。断言 <code>#console.data-fallback</code> <code>#vf-stale</code> 可见</td><td><button class="go" data-goto="S7">跳到</button></td></tr>
+      <tr><td class="id">S8</td><td class="nm">直播 · 画面不可用</td><td class="side">双端</td><td>读回失败 / 相机不可用（T12 error）</td><td>专家台：遮罩「⚠ 画面不可用」+ 副文案。头显：红点熄灭，状态「画面不可用 · 读回失败」error 色。断言 <code>#console.data-error</code> <code>#vf-error</code> 可见</td><td><button class="go" data-goto="S8">跳到</button></td></tr>
+      <tr><td class="id">S9</td><td class="nm">通话条 · 结束确认</td><td class="side">头显</td><td>直播 / 暂停态按通话条 ⏻（T10，唯一要显式确认的转换）</td><td>通话条隐去状态与 5 键，改显「结束会话并停止共享？」+ [是]（粉笔黄）+ [否]，条体前移 8 dp。Stage 内不用浮层对话框。断言 <code>#strip.confirming</code></td><td><button class="go" data-goto="S9">跳到</button></td></tr>
+      <tr><td class="id">E1</td><td class="nm">专家台 · PIN 门</td><td class="side">专家</td><td>浏览器打开 <code>http://&lt;ip&gt;:8765</code>；会话结束 / 断线超时后也回到此页</td><td>石板底上 340 px 卡片：「连接到现场」、说明、PIN 输入、[连接] 粉笔黄。子态：PIN 错误（输入框 error + 红字）、会话已结束、连接已断开。断言 <code>#console[data-state=gate]</code> <code>#gate-pin[error]</code></td><td><button class="go" data-goto="E1">跳到（错 PIN）</button></td></tr>
+      <tr><td class="id">E2</td><td class="nm">专家台 · 清除提示</td><td class="side">专家</td><td>专家按粉笔盘 清除（T6），且有笔迹</td><td>底部 Snackbar「已清除全部笔迹 · 撤销」，点撤销笔迹回来；头显侧笔迹同步清零。断言 <code>#snack</code> 有内容</td><td><span class="tiny">手动：画一笔后按清除</span></td></tr>
+      <tr><td class="id">E3</td><td class="nm">专家台 · 结束对话框</td><td class="side">专家</td><td>专家按顶栏 [结束]（T10）</td><td>对话框「结束会话？」+ 文案 + [取消] / [结束]（error 红）。对话框走浏览器 top layer，截图可能拍不到，用 DOM <code>:popover-open</code> 断言</td><td><button class="go" data-goto="E3">跳到</button></td></tr>
+    </tbody>
+  </table></div>
+  <p class="note" style="margin-top:12px"><b>转换一览</b>　T1 接入 · T2 专家画 · T3 现场人员画 · T4 指点（悬停即黄点，≤ 20 Hz，700 ms 熄灭）· T5 撤销（各撤自己上一笔）· T6 清除（任一方，专家台可撤销）· T7 自动淡出（8 s 后 2 s 内，默认关）· T8 暂停 / 恢复共享 · T9 断线 / 重连 / 30 s 超时 · T10 结束会话（唯一需确认）· T11 权限 · T12 画面不可用 / 过期。</p>
+</section>
+
+<!-- ═══════════ 2 空间布局 ═══════════ -->
+<section id="s2">
+  <div class="sec-head"><span class="num">2</span><h2>空间布局 · Stage Mixed</h2><span class="muted">容器无边框（Full Space 透视），三块面板都是 Stage 内 Planar 面板。尺寸单位：米（物理）/ dp（渲染）。</span></div>
+  <div class="card" style="padding:10px">
+    <svg viewBox="0 0 820 600" style="width:100%;height:auto;display:block;font-family:var(--mono)" role="img" aria-label="俯视与侧视示意：视野玻璃 1.0 m，通话条 0.9 m，配对卡 1.2 m">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="rgba(255,255,255,.7)"/></marker>
+      </defs>
+      <!-- 俯视 -->
+      <text x="16" y="26" fill="#F2F4F5" font-size="14" font-weight="600">俯视（头在左，面朝右）</text>
+      <text x="16" y="44" fill="rgba(242,244,245,.5)" font-size="11">1 m = 260 px</text>
+      <g transform="translate(0,20)">
+        <!-- 头 -->
+        <circle cx="60" cy="150" r="16" fill="none" stroke="#F2F4F5" stroke-width="2"/>
+        <path d="M60 134 l6 -10 l-12 0z" fill="#F2F4F5" transform="rotate(90 60 150)"/>
+        <text x="60" y="190" fill="rgba(242,244,245,.7)" font-size="11" text-anchor="middle">现场人员</text>
+        <!-- 相机视场 55° -->
+        <path d="M60 150 L320 14.5 M60 150 L320 285.5" stroke="rgba(255,225,77,.55)" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <path d="M120 118 A 60 60 0 0 1 120 182" fill="none" stroke="rgba(255,225,77,.8)" stroke-width="1.5"/>
+        <text x="128" y="154" fill="#FFE14D" font-size="11">55°（相机水平视场）</text>
+        <!-- 通话条 0.9 m（视野下沿，俯视为短线） -->
+        <line x1="294" y1="100" x2="294" y2="200" stroke="rgba(255,255,255,.75)" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 6"/>
+        <!-- 视野玻璃 1.0 m -->
+        <line x1="320" y1="14.5" x2="320" y2="285.5" stroke="#8CD5FF" stroke-width="4" stroke-linecap="round"/>
+        <!-- 配对卡 1.2 m -->
+        <line x1="372" y1="77" x2="372" y2="223" stroke="rgba(255,255,255,.95)" stroke-width="5" stroke-linecap="round"/>
+        <!-- 距离标注 -->
+        <line x1="60" y1="300" x2="320" y2="300" stroke="rgba(255,255,255,.7)" stroke-width="1" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text x="190" y="316" fill="#F2F4F5" font-size="11" text-anchor="middle">1.0 m</text>
+        <line x1="60" y1="330" x2="372" y2="330" stroke="rgba(255,255,255,.5)" stroke-width="1" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text x="216" y="346" fill="rgba(242,244,245,.7)" font-size="11" text-anchor="middle">1.2 m</text>
+        <line x1="60" y1="270" x2="294" y2="270" stroke="rgba(255,255,255,.5)" stroke-width="1" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text x="177" y="266" fill="rgba(242,244,245,.7)" font-size="11" text-anchor="middle">0.9 m</text>
+        <!-- 右侧图例 -->
+        <g font-size="12" fill="#F2F4F5">
+          <line x1="420" y1="60" x2="448" y2="60" stroke="#8CD5FF" stroke-width="4" stroke-linecap="round"/>
+          <text x="458" y="64" font-weight="600">视野玻璃 Visor Glass</text>
+          <text x="458" y="82" fill="rgba(242,244,245,.7)" font-size="11">1.0 m · 宽 1.05 m（= 1.0 × W/fx）· 头锁定</text>
+          <text x="458" y="98" fill="rgba(242,244,245,.7)" font-size="11">渲染 1280×720 dp · 无材质，平时不可见</text>
+          <line x1="420" y1="130" x2="448" y2="130" stroke="rgba(255,255,255,.75)" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 6"/>
+          <text x="458" y="134" font-weight="600">通话条 Call Strip</text>
+          <text x="458" y="152" fill="rgba(242,244,245,.7)" font-size="11">0.9 m · 宽 0.38 m（616 dp）· 视野下沿 · 懒跟随</text>
+          <text x="458" y="168" fill="rgba(242,244,245,.7)" font-size="11">Material.Regular 玻璃 · 内联确认时前移 +8 dp</text>
+          <line x1="420" y1="200" x2="448" y2="200" stroke="rgba(255,255,255,.95)" stroke-width="5" stroke-linecap="round"/>
+          <text x="458" y="204" font-weight="600">配对卡 Lobby Card</text>
+          <text x="458" y="222" fill="rgba(242,244,245,.7)" font-size="11">1.2 m · 宽 0.56 m（640 dp）· 启动时正前方固定</text>
+          <text x="458" y="238" fill="rgba(242,244,245,.7)" font-size="11">只在配对态显示；直播时整块隐去</text>
+          <text x="458" y="276" fill="#FFE14D" font-size="11" font-weight="600">容器边界：STAGE_MIXED 无边框，透视整个房间</text>
+          <text x="458" y="292" fill="rgba(242,244,245,.7)" font-size="11">不用 Toolbar / TabBar / Subwindow；Stage 内无浮层对话框</text>
+        </g>
+      </g>
+      <!-- 侧视 -->
+      <line x1="16" y1="372" x2="804" y2="372" stroke="rgba(255,255,255,.12)"/>
+      <text x="16" y="398" fill="#F2F4F5" font-size="14" font-weight="600">侧视（头在左，面朝右）</text>
+      <g transform="translate(0,340)">
+        <circle cx="60" cy="150" r="16" fill="none" stroke="#F2F4F5" stroke-width="2"/>
+        <!-- 垂直视场 33° -->
+        <path d="M60 150 L320 72 M60 150 L320 228" stroke="rgba(255,225,77,.55)" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="128" y="146" fill="#FFE14D" font-size="11">33°（相机垂直视场）</text>
+        <!-- 玻璃 0.60 m 高 -->
+        <line x1="320" y1="72" x2="320" y2="228" stroke="#8CD5FF" stroke-width="4" stroke-linecap="round"/>
+        <line x1="340" y1="72" x2="340" y2="228" stroke="rgba(255,255,255,.5)" stroke-width="1" marker-start="url(#ar)" marker-end="url(#ar)"/>
+        <text x="348" y="154" fill="rgba(242,244,245,.8)" font-size="11">0.60 m（= 1.0 × H/fy）</text>
+        <!-- 通话条：0.9 m，视野下沿稍低，高 0.07 m -->
+        <rect x="291" y="206" width="6" height="18" rx="3" fill="rgba(255,255,255,.85)"/>
+        <text x="236" y="248" fill="rgba(242,244,245,.8)" font-size="11">通话条 0.07 m 高</text>
+        <text x="236" y="262" fill="rgba(242,244,245,.6)" font-size="11">比玻璃近 0.1 m、低于视线，不遮玻璃</text>
+        <!-- 配对卡 1.2 m，高 0.34 m，视线居中 -->
+        <rect x="369" y="106" width="6" height="88" rx="3" fill="rgba(255,255,255,.95)"/>
+        <text x="384" y="100" fill="rgba(242,244,245,.8)" font-size="11">配对卡 0.34 m 高</text>
+        <!-- 工作面 -->
+        <line x1="190" y1="235" x2="450" y2="235" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="3 4"/>
+        <text x="450" y="225" fill="rgba(242,244,245,.55)" font-size="11" text-anchor="end">工作面 0.5–1.5 m（双手在干活，眼睛看下方）</text>
+      </g>
+    </svg>
+  </div>
+  <div class="dims" style="margin-top:12px"><b>深度语言</b> 玻璃 1.0 m（头锁定，ECS 系统每帧按 HMD 位姿写 transform）· 通话条 0.9 m 稍近稍低（懒跟随）· 配对卡 1.2 m（固定）· 三者不互相遮挡。玻璃尺寸由相机内参算：放在 1.0 m 处时 宽 = W/fx、高 = H/fy ≈ 1.05 × 0.60 m（≈ 55° × 33°，在 Swan 65° × 40° 视场内）。</div>
+</section>
+
+<!-- ═══════════ 3 视野玻璃 ═══════════ -->
+<section id="s3">
+  <div class="sec-head"><span class="num">3</span><h2>头显 · 视野玻璃 Visor Glass</h2><span class="muted">签名元素。承载双方笔迹与专家光标；无材质，平时什么都不显示。</span></div>
+  <div class="dims"><b>尺寸</b> 1280 × 720 dp 渲染 · 物理约 1.05 × 0.60 m @ 1.0 m · 头锁定 · 笔迹坐标归一化 0–1（与相机画面同一坐标系）· 笔迹 strokeHalo 外描边 rgba(0,0,0,.45)</div>
+
+  <h3>3.1 直播 · 玻璃隐形（S3）</h3>
+  <div class="scene" data-scene>
+    <div class="vig"></div>
+    <div class="gl ghost">
+      <svg class="strokes" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+        <ellipse cx="794" cy="344" rx="48" ry="36" stroke="rgba(0,0,0,.45)" stroke-width="11"/><ellipse cx="794" cy="344" rx="48" ry="36" stroke="#FFE14D" stroke-width="5"/>
+      </svg>
+      <div class="hud" style="left:55.6%;top:26.5%"></div>
+      <span class="tag" style="left:12px;top:10px">视野玻璃边界（虚线只是标注，实际不可见）· 1.05 × 0.60 m @ 1.0 m</span>
+    </div>
+    <svg class="ovl" viewBox="0 0 1600 900">
+      <line x1="160" y1="62" x2="1440" y2="62" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="800" y="52" text-anchor="middle">1.05 m · 1280 dp</text>
+      <line x1="120" y1="90" x2="120" y2="810" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="100" y="470" text-anchor="middle" transform="rotate(-90 100 470)">0.60 m · 720 dp</text>
+    </svg>
+    <div class="sstrip glass"><span class="st"><i class="dot live"></i>专家已连接</span><span class="keys"><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div>
+  </div>
+  <p class="note"><b>看到什么</b> 透视的真实房间；专家在视频上圈了红灯，黄圈就落在红灯上（归一化坐标沿相机同一条视线回到眼前）；专家鼠标悬停处是一个黄点（700 ms 熄灭）。视野里除了笔迹只有一条通话条。</p>
+
+  <h3>3.2 直播 · 我在画（S4）</h3>
+  <div class="scene" data-scene>
+    <div class="vig"></div>
+    <div class="gl pen">
+      <svg class="strokes" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+        <ellipse cx="794" cy="344" rx="48" ry="36" stroke="rgba(0,0,0,.45)" stroke-width="11"/><ellipse cx="794" cy="344" rx="48" ry="36" stroke="#FFE14D" stroke-width="5"/>
+        <polyline points="470,420 560,392 650,372 735,358" stroke="rgba(0,0,0,.45)" stroke-width="11"/><polyline points="470,420 560,392 650,372 735,358" stroke="#8CD5FF" stroke-width="5"/>
+        <polyline points="705,340 735,358 712,384" stroke="rgba(0,0,0,.45)" stroke-width="11"/><polyline points="705,340 735,358 712,384" stroke="#8CD5FF" stroke-width="5"/>
+      </svg>
+      <span class="chip b" style="position:absolute;left:12px;top:10px">✎ 在玻璃上画 · 专家同步看到</span>
+    </div>
+    <div class="sstrip glass"><span class="st"><i class="dot live"></i>画笔开 · 在玻璃上画</span><span class="keys"><b class="k on"><svg><use href="#i-pen"/></svg></b><b class="k"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div>
+  </div>
+  <p class="note"><b>看到什么</b> 玻璃显出 2 dp chalkBlue 细框 + 4% 白色薄纱，左上角芯片提示「在玻璃上画」。现场人员的笔固定为蓝色、固定粗细；用捏合拖动在玻璃上画，专家视频上同步出现。✎ 关则细框消失，笔迹保留。</p>
+
+  <h3>3.3 直播 · 笔迹淡出中（T7）</h3>
+  <div class="scene" data-scene style="max-width:640px">
+    <div class="vig"></div>
+    <div class="gl fade">
+      <svg class="strokes" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+        <ellipse cx="794" cy="344" rx="48" ry="36" stroke="rgba(0,0,0,.45)" stroke-width="11"/><ellipse cx="794" cy="344" rx="48" ry="36" stroke="#FFE14D" stroke-width="5"/>
+      </svg>
+      <span class="tag" style="left:12px;top:10px">专家台「8 秒淡出」开：每笔画完 8 s 后，2 s 内淡到 0</span>
+    </div>
+    <div class="sstrip glass"><span class="st"><i class="dot live"></i>专家已连接</span><span class="keys"><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div>
+  </div>
+  <p class="note"><b>默认</b> 笔迹一直留着直到任一方清除；淡出是专家台的开关，默认关。</p>
+</section>
+
+<!-- ═══════════ 4 通话条 ═══════════ -->
+<section id="s4">
+  <div class="sec-head"><span class="num">4</span><h2>头显 · 通话条 Call Strip</h2><span class="muted">一眼知道状态、一指开画笔 / 撤销 / 清除 / 隐私 / 结束。下列为 1 dp = 1 px 原尺寸。</span></div>
+  <div class="dims"><b>尺寸</b> 默认 616 × 112 dp（物理约 0.38 × 0.07 m @ 0.9 m）· 最小 520 × 112 · 最大 760 × 112 · 圆角 56 · 5 个 56 dp 图标键 · 状态文字 bodyMedium 14/18 Medium · Material.Regular 玻璃 · 懒跟随，视野下沿</div>
+  <div class="dims"><b>SpatialUI</b> ✎ ◉ = ToggleIconButton · ↶ 🗑 ⏻ = IconButton · 状态 = Text + DotBadge · 内联确认 = Button × 2 · 进度 = LinearProgress · 悬停用 spatialHoverEffect（lightenHover）</div>
+
+  <h3>4.1 直播（S3）</h3>
+  <div class="scroller"><div class="mock" data-slice><div class="strip glass"><span class="st"><i class="dot live"></i>专家已连接</span><span class="keys"><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note">红点 liveRed 实心 + 呼吸 = 摄像头正在共享（REC 语义，红点严格只用于这件事）。↶ 只在自己有笔迹时可用；🗑 在有任何笔迹时可用；◉ 选中 = 共享开。</p>
+
+  <h3>4.2 我在画（S4）</h3>
+  <div class="scroller"><div class="mock" data-slice><div class="strip glass"><span class="st"><i class="dot live"></i>画笔开 · 在玻璃上画</span><span class="keys"><b class="k on"><svg><use href="#i-pen"/></svg></b><b class="k"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+
+  <h3>4.3 已暂停共享（S5）</h3>
+  <div class="scroller"><div class="mock" data-slice><div class="strip glass"><span class="st alert"><i class="dot off"></i>已暂停共享 · 专家看不到画面</span><span class="keys"><b class="k dis"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k"><svg><use href="#i-camoff"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note">红点立即熄灭；状态文字用 alert 色 #FF8A1F；◉ 变成划线的 ◌（未选中）。再按一次回到直播。</p>
+
+  <h3>4.4 重连中（S6）</h3>
+  <div class="scroller"><div class="mock" data-slice><div class="strip glass"><span class="st alert"><i class="dot off"></i>↻ 重连中…</span><span class="keys"><b class="k dis"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on dis"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span><span class="prog"><i></i></span></div></div></div>
+  <p class="note">条底 2 dp 线性进度（alert 色，不定长）。画笔 / 撤销 / 清除 / 共享开关禁用（LocalDisableAlpha 0.3）；⏻ 保留，随时可结束。30 s 未恢复 → 回配对并换新 PIN。</p>
+
+  <h3>4.5 画面过期（S7）/ 画面不可用（S8）</h3>
+  <div class="scroller"><div class="mock" data-slice><div class="strip glass"><span class="st"><i class="dot live"></i>专家已连接 · <span style="color:var(--alert)">画面 3 秒前</span></span><span class="keys"><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <div class="scroller" style="margin-top:12px"><div class="mock" data-slice><div class="strip glass"><span class="st error"><i class="dot off"></i>⚠ 画面不可用 · 读回失败</span><span class="keys"><b class="k dis"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note">过期：红点仍亮（相机在共享，只是帧没到），只有文字带时间。不可用：红点熄灭，error 色；画笔禁用，因为玻璃坐标与画面不再对应。</p>
+
+  <h3>4.6 结束会话 · 内联确认（S9）</h3>
+  <div class="scroller"><div class="mock" data-slice><div class="strip glass confirming"><span class="confirm"><span>结束会话并停止共享？</span><span class="btn y">是</span><span class="btn">否</span></span></div></div></div>
+  <p class="note">Stage 里不用浮层对话框（实测 AlertDialog 不显示内容）：确认就在通话条里完成，条体 zOffset 前移 +8 dp 提示「这是一步确认」。是 → 清笔迹、停共享、回配对并换新 PIN；否 → 回前态。</p>
+</section>
+
+<!-- ═══════════ 5 配对卡 ═══════════ -->
+<section id="s5">
+  <div class="sec-head"><span class="num">5</span><h2>头显 · 配对卡 Lobby Card</h2><span class="muted">让专家连上。只在配对态显示。</span></div>
+  <div class="dims"><b>尺寸</b> 默认 640 × 384 dp（物理约 0.56 × 0.34 m @ 1.2 m）· 最小 560 × 340 · 最大 720 × 420 · 圆角 32 · Material.Regular 玻璃 · 地址 titleLarge 20/26 SemiBold · PIN displayLarge 40/54 Bold 字距 +8 · 权限行 44 dp</div>
+
+  <h3>5.1 等待专家接入（S1）</h3>
+  <div class="scroller"><div class="mock tall" data-scene>
+    <div class="lobby glass">
+      <div class="t"><i class="dot hollow"></i>借眼 · 等待专家接入</div>
+      <div class="lb">专家在同一 Wi-Fi 的电脑浏览器打开</div>
+      <div class="url">http://192.168.1.42:8765</div>
+      <div class="lb">并输入 PIN</div>
+      <div class="pin">4 8 2 7</div>
+      <div class="perm"><svg class="ico"><use href="#i-cam"/></svg><span class="pm">摄像头 · 已授权，连接后开始共享你的视野</span></div>
+      <div class="hint">共享期间通话条上会一直亮着红点；随时可暂停共享。</div>
+    </div>
+  </div></div>
+  <p class="note">等待用空心圆（labelSecondary），和直播红点区分。PIN 每次会话重新生成；专家 PIN 正确后整卡隐去（缩放 .96 + 淡出），通话条从下沿滑入。</p>
+
+  <h3>5.2 权限被拒（S2）</h3>
+  <div class="scroller"><div class="mock tall" data-scene>
+    <div class="lobby glass">
+      <div class="t"><i class="dot hollow"></i>借眼 · 等待专家接入</div>
+      <div class="lb">专家在同一 Wi-Fi 的电脑浏览器打开</div>
+      <div class="url">http://192.168.1.42:8765</div>
+      <div class="lb">并输入 PIN</div>
+      <div class="pin">4 8 2 7</div>
+      <div class="perm denied"><svg class="ico"><use href="#i-camoff"/></svg><span class="pm">摄像头权限未授权 · 专家将看不到画面</span><span class="btn y" style="height:32px;padding:0 14px;font-size:12px">授权</span></div>
+      <div class="hint">共享期间通话条上会一直亮着红点；随时可暂停共享。</div>
+    </div>
+  </div></div>
+  <p class="note">权限行换 error 底（#FF5F52 22%）+ 描边 + [授权]（interaction 粉笔黄，字用 inkOnChalk）。授权成功回 5.1。专家此时仍可连上，但取景框会是「画面不可用」。</p>
+</section>
+
+<!-- ═══════════ 6 专家台 ═══════════ -->
+<section id="s6">
+  <div class="sec-head"><span class="num">6</span><h2>专家台 · 电脑浏览器</h2><span class="muted">LAN 内网页。单一焦点是取景框；工具盘只有色块、粗细、撤销、清除、淡出开关，没有文字。</span></div>
+  <div class="dims"><b>尺寸</b> 视口 1440 × 900（最小 1024 × 640）· 顶栏 56 · 取景框 16:9 · 粉笔盘 56 高玻璃条 · 页面底 slate #20262A · 取景框黑边 slateDeep #161B1E</div>
+
+  <h3>6.1 直播 · 取景框 + 粉笔盘（S3 / S4）</h3>
+  <div class="console">
+    <div class="chrome"><span class="d"><i></i><i></i><i></i></span><span class="addr">http://192.168.1.42:8765</span></div>
+    <div class="topbar"><span class="brand">借眼 · 专家台</span><span class="chip r">● 直播</span><span class="lat">86 ms · 14 fps</span><span class="sp"></span><span class="btn" style="height:32px;padding:0 14px;font-size:12px">结束</span></div>
+    <div class="cmain"><div class="vf" data-cam>
+      <svg class="strokes" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+        <ellipse cx="794" cy="344" rx="48" ry="36" stroke="rgba(0,0,0,.45)" stroke-width="11"/><ellipse cx="794" cy="344" rx="48" ry="36" stroke="#FFE14D" stroke-width="5"/>
+        <polyline points="470,420 560,392 650,372 735,358" stroke="rgba(0,0,0,.45)" stroke-width="11"/><polyline points="470,420 560,392 650,372 735,358" stroke="#8CD5FF" stroke-width="5"/>
+        <polyline points="705,340 735,358 712,384" stroke="rgba(0,0,0,.45)" stroke-width="11"/><polyline points="705,340 735,358 712,384" stroke="#8CD5FF" stroke-width="5"/>
+      </svg>
+      <div class="hud" style="left:55.6%;top:26.5%"></div>
+      <span class="chip b tl">✎ 对方画笔已开</span>
+    </div></div>
+    <div class="ctray"><div class="tray glass">
+      <span class="sw sel" style="background:#FFE14D"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#F6F2E6"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#FF8FB1"><svg><use href="#i-check"/></svg></span>
+      <span class="sep"></span>
+      <span class="wd"><svg><use href="#i-d1"/></svg></span><span class="wd sel"><svg><use href="#i-d2"/></svg></span><span class="wd"><svg><use href="#i-d3"/></svg></span>
+      <span class="sep"></span>
+      <b class="k"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b>
+      <span class="sep"></span>
+      <span class="fade"><span class="sw-toggle"><i></i></span>8 秒淡出</span>
+    </div></div>
+  </div>
+  <p class="note"><b>画</b> 在取景框按住拖动即画（T2），悬停即指点（T4，光标位置以 ≤ 20 Hz 发给头显）。<b>粉笔盘</b> 3 个色块（黄 / 白 / 粉，选中显 ✓ + 白环）· 3 档粗细（点大小，选中粉笔黄底）· 撤销（Ctrl+Z 只撤自己的）· 清除（Snackbar 可撤销）· 8 秒淡出开关。≤ 6 个控件。SpatialUI：IconButton（container-color = 粉笔色）/ Switch / Chip / Button。</p>
+
+  <h3>6.2 粉笔盘 · 原尺寸</h3>
+  <div class="grid2">
+    <div class="card"><h4>可用 <span class="st">S3</span></h4><div class="scroller" style="background:#2a3135;padding:14px;border-radius:12px"><div class="tray glass">
+      <span class="sw sel" style="background:#FFE14D"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#F6F2E6"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#FF8FB1"><svg><use href="#i-check"/></svg></span>
+      <span class="sep"></span>
+      <span class="wd"><svg><use href="#i-d1"/></svg></span><span class="wd sel"><svg><use href="#i-d2"/></svg></span><span class="wd"><svg><use href="#i-d3"/></svg></span>
+      <span class="sep"></span><b class="k"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><span class="sep"></span>
+      <span class="fade"><span class="sw-toggle on"><i></i></span>8 秒淡出</span>
+    </div></div><div class="note">淡出开关开（checked-track 粉笔黄）。</div></div>
+    <div class="card"><h4>禁用 <span class="st">S6 重连中 · S8 画面不可用</span></h4><div class="scroller" style="background:#2a3135;padding:14px;border-radius:12px"><div class="tray glass dis">
+      <span class="sw sel" style="background:#FFE14D"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#F6F2E6"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#FF8FB1"><svg><use href="#i-check"/></svg></span>
+      <span class="sep"></span>
+      <span class="wd"><svg><use href="#i-d1"/></svg></span><span class="wd sel"><svg><use href="#i-d2"/></svg></span><span class="wd"><svg><use href="#i-d3"/></svg></span>
+      <span class="sep"></span><b class="k"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><span class="sep"></span>
+      <span class="fade"><span class="sw-toggle"><i></i></span>8 秒淡出</span>
+    </div></div><div class="note">整盘 LocalDisableAlpha 0.3，不收指针。</div></div>
+  </div>
+
+  <h3>6.3 PIN 门 Gate（E1）</h3>
+  <div class="slateboard">
+    <div class="gate"><div class="title">连接到现场</div><div class="sub">输入现场人员头显上显示的 4 位 PIN。两台设备需在同一 Wi-Fi。</div><div class="field">PIN</div><div class="error"></div><div class="actions"><span class="btn y lg">连接</span></div><div class="tiny" style="margin-top:4px">空</div></div>
+    <div class="gate"><div class="title">连接到现场</div><div class="sub">输入现场人员头显上显示的 4 位 PIN。两台设备需在同一 Wi-Fi。</div><div class="field err">4 8 7 2</div><div class="error">PIN 不对，请核对头显上显示的 4 位数字。</div><div class="actions"><span class="btn y lg">连接</span></div><div class="tiny" style="margin-top:4px">PIN 错误（TextField error）</div></div>
+    <div class="gate"><div class="title">连接到现场</div><div class="sub">输入现场人员头显上显示的 4 位 PIN。两台设备需在同一 Wi-Fi。</div><div class="field">PIN</div><div class="error neutral">会话已结束。现场人员重新共享后，输入新的 PIN 连接。</div><div class="actions"><span class="btn y lg">连接</span></div><div class="tiny" style="margin-top:4px">会话已结束 / 连接已断开（30 秒未恢复）</div></div>
+  </div>
+
+  <h3>6.4 状态签 Status Pill · 结束对话框（E3）· 清除提示（E2）</h3>
+  <div class="card">
+    <div class="chips"><span class="chip r">● 直播</span><span class="chip a">● 直播 · 画面过期</span><span class="chip a">⏸ 对方已暂停共享</span><span class="chip a">↻ 重连中…</span><span class="chip e">⚠ 画面不可用</span><span class="chip b">✎ 对方画笔已开</span><span class="chip a">⏱ 画面 3 秒前</span></div>
+    <div class="note">状态签在顶栏，旁边是延迟 · fps（正常 86 ms · 14 fps；过期 — ms · 0 fps；其余为空）。sui-chip small。</div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;margin-top:16px">
+      <div class="dialog"><div class="t">结束会话？</div><div class="m">头显会停止共享并回到配对界面，笔迹全部清除。</div><div class="btns"><span class="btn">取消</span><span class="btn e">结束</span></div></div>
+      <div class="snack">已清除全部笔迹<b>撤销</b></div>
+    </div>
+    <div class="note">专家台可以用对话框（浏览器端 AlertDialog）；Snackbar 4 s，撤销后笔迹整组回来，头显同步。</div>
+  </div>
+</section>
+
+<!-- ═══════════ 7 异常态 ═══════════ -->
+<section id="s7">
+  <div class="sec-head"><span class="num">7</span><h2>异常态 · 专家台取景框</h2><span class="muted">S5 / S6 / S7 / S8 在专家侧的样子；头显侧对应通话条见第 4 节。</span></div>
+  <div class="grid2">
+    <div class="card"><h4>对方已暂停共享 <span class="st">S5</span></h4><div class="vf" data-cam><div class="over"><span class="big">⏸</span><span>对方已暂停共享</span><span class="sub">现场人员重新打开共享后画面会继续</span></div></div><div class="note">遮罩 rgba(22,27,30,.74) + 6 px 模糊；状态签「⏸ 对方已暂停共享」alert 底。粉笔盘禁用。</div></div>
+    <div class="card"><h4>重连中 <span class="st">S6</span></h4><div class="vf" data-cam><div class="over"><span class="ring"></span><span>重连中…</span><span class="sub">连上后笔迹会同步回来</span></div></div><div class="note">CircularProgress 不定长；粉笔盘禁用；30 s 超时 → 回 PIN 门，提示「连接已断开」。</div></div>
+    <div class="card"><h4>画面过期 <span class="st">S7</span></h4><div class="vf stale" data-cam><span class="chip a tr">⏱ 画面 3 秒前</span><svg class="strokes" viewBox="0 0 1000 562.5" preserveAspectRatio="none"><ellipse cx="794" cy="344" rx="48" ry="36" stroke="rgba(0,0,0,.45)" stroke-width="11"/><ellipse cx="794" cy="344" rx="48" ry="36" stroke="#FFE14D" stroke-width="5"/></svg></div><div class="note">灰化 + 变暗，右上芯片带秒数，延迟「— ms · 0 fps」。仍可画：笔迹坐标系没变，只是画面旧了。</div></div>
+    <div class="card"><h4>画面不可用 <span class="st">S8</span></h4><div class="vf" data-cam><div class="over"><span class="big">⚠</span><span>画面不可用</span><span class="sub">头显未能读取摄像头画面（权限或读回失败）</span></div></div><div class="note">状态签「⚠ 画面不可用」error 底；禁止画（坐标无法对应）。头显侧通话条「画面不可用 · 读回失败」。</div></div>
+  </div>
+  <p class="note" style="margin-top:14px"><b>语义色冗余线索</b> 共享中 = 红点 + 呼吸；已连接 = passable 实心小圆；等待 = 空心圆；对方画笔开 = chalkBlue 芯片 + ✎；重连中 = alert + ↻ + 进度；已暂停 = alert + ⏸；画面过期 = alert + 灰化 + 时间；错误 = error + ⚠。每种状态都有颜色之外的第二线索。</p>
+</section>
+
+<!-- ═══════════ 8 色板与字体 ═══════════ -->
+<section id="s8">
+  <div class="sec-head"><span class="num">8</span><h2>色板与字体</h2><span class="muted">主题：SpatialUI vibrant，根面 Material.Regular 玻璃。题材取「粉笔与石板」。</span></div>
+  <h3>8.1 ColorScheme 16 角色（PicoTheme.colorScheme）</h3>
+  <div class="swatches">
+    <div class="swatch"><div class="c"><i style="background:rgba(16,16,16,.9)"></i></div><div class="n">fillPrimary</div><div class="v">inherit Vibrant</div><div class="u">图标按钮默认底</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.4)"></i></div><div class="n">fillSecondary</div><div class="v">inherit Vibrant</div><div class="u">次级卡片</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.08)"></i></div><div class="n">fillTertiary</div><div class="v">inherit Vibrant</div><div class="u">分段控件底</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.15)"></i></div><div class="n">fillLight</div><div class="v">inherit Vibrant</div><div class="u">输入框底</div></div>
+    <div class="swatch"><div class="c"><i style="background:#fff"></i></div><div class="n">labelPrimaryLight</div><div class="v">inherit Vibrant</div><div class="u">图标与按钮文字（白）</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.94)"></i></div><div class="n">labelPrimary</div><div class="v">inherit Vibrant</div><div class="u">正文</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.8)"></i></div><div class="n">labelSecondary</div><div class="v">inherit Vibrant</div><div class="u">次级文字、等待空心圆</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.65)"></i></div><div class="n">labelTertiary</div><div class="v">inherit Vibrant</div><div class="u">辅助文字</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.4)"></i></div><div class="n">labelQuaternary</div><div class="v">inherit Vibrant</div><div class="u">占位文字</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.2)"></i></div><div class="n">lightenHover</div><div class="v">inherit Vibrant</div><div class="u">悬停（spatialHoverEffect）</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.3)"></i></div><div class="n">lightenPressed</div><div class="v">inherit Vibrant</div><div class="u">按下</div></div>
+    <div class="swatch"><div class="c"><i style="background:#FF5F52"></i></div><div class="n">error</div><div class="v">#FF5F52</div><div class="u">权限被拒、PIN 错误、画面不可用</div></div>
+    <div class="swatch"><div class="c"><i style="background:#FF8A1F"></i></div><div class="n">alert</div><div class="v">#FF8A1F</div><div class="u">重连中、画面过期、已暂停</div></div>
+    <div class="swatch"><div class="c"><i style="background:#7CF2A3"></i></div><div class="n">passable</div><div class="v">#7CF2A3</div><div class="u">已连接、已授权</div></div>
+    <div class="swatch"><div class="c"><i style="background:#FFE14D"></i></div><div class="n">interaction</div><div class="v">#FFE14D</div><div class="u">选中态、主按钮（连接 / 是 / 授权）；其上用 inkOnChalk</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(255,255,255,.12)"></i></div><div class="n">dividerLine</div><div class="v">inherit Vibrant</div><div class="u">分隔线</div></div>
+  </div>
+  <h3>8.2 品牌 / 装饰 token（ColorScheme 之外）</h3>
+  <div class="swatches">
+    <div class="swatch"><div class="c"><i style="background:#FFE14D"></i></div><div class="n">chalkYellow</div><div class="v">#FFE14D</div><div class="u">专家笔迹、指点光标</div></div>
+    <div class="swatch"><div class="c"><i style="background:#F6F2E6"></i></div><div class="n">chalkWhite</div><div class="v">#F6F2E6</div><div class="u">专家笔色 2</div></div>
+    <div class="swatch"><div class="c"><i style="background:#FF8FB1"></i></div><div class="n">chalkPink</div><div class="v">#FF8FB1</div><div class="u">专家笔色 3</div></div>
+    <div class="swatch"><div class="c"><i style="background:#8CD5FF"></i></div><div class="n">chalkBlue</div><div class="v">#8CD5FF</div><div class="u">现场人员笔迹（固定）、画笔开的玻璃细框</div></div>
+    <div class="swatch"><div class="c"><i style="background:#1E1A0E"></i></div><div class="n">inkOnChalk</div><div class="v">#1E1A0E</div><div class="u">放在粉笔黄上的图标 / 文字</div></div>
+    <div class="swatch"><div class="c"><i style="background:#FF3B30"></i></div><div class="n">liveRed</div><div class="v">#FF3B30</div><div class="u">共享中红点（REC 语义）</div></div>
+    <div class="swatch"><div class="c"><i style="background:#20262A"></i></div><div class="n">slate</div><div class="v">#20262A</div><div class="u">专家台页面底色</div></div>
+    <div class="swatch"><div class="c"><i style="background:#161B1E"></i></div><div class="n">slateDeep</div><div class="v">#161B1E</div><div class="u">取景框黑边</div></div>
+    <div class="swatch"><div class="c"><i style="background:rgba(0,0,0,.45)"></i></div><div class="n">strokeHalo</div><div class="v">rgba(0,0,0,.45)</div><div class="u">笔迹外描边，保证在亮画面 / 透视里可读</div></div>
+  </div>
+  <h3>8.3 字体 · Noto Sans + Noto Sans SC（应用内打包）</h3>
+  <div class="type">
+    <div class="row"><span class="r">displayLarge 40/54 Bold</span><span class="s" style="font-size:40px;line-height:54px;font-weight:700;letter-spacing:8px">4827<span class="meta">PIN · 字距 +8 · 1.2 m 可读</span></span></div>
+    <div class="row"><span class="r">titleLarge 20/26 SemiBold</span><span class="s" style="font-size:20px;line-height:26px;font-weight:600">http://192.168.1.42:8765<span class="meta">配对卡地址</span></span></div>
+    <div class="row"><span class="r">titleMedium 16/20</span><span class="s" style="font-size:16px;line-height:20px;font-weight:600">借眼 · 等待专家接入<span class="meta">卡片标题</span></span></div>
+    <div class="row"><span class="r">bodyMedium 14/18 Medium</span><span class="s" style="font-size:14px;line-height:18px;font-weight:500">专家已连接 · 画笔开 · 在玻璃上画<span class="meta">通话条状态、正文；中文 ≤ 17 sp 一律 Medium</span></span></div>
+    <div class="row"><span class="r">labelMedium 12/16 SemiBold</span><span class="s" style="font-size:12px;line-height:16px;font-weight:600">对方画笔已开 · 画面 3 秒前 · 86 ms · 14 fps<span class="meta">芯片、时间戳</span></span></div>
+  </div>
+</section>
+
+<!-- ═══════════ 9 可交互原型 ═══════════ -->
+<section id="s9">
+  <div class="sec-head"><span class="num">9</span><h2>可交互原型 · preview.html v2</h2><span class="muted">左边头显视野、右边专家台，共用一个状态机。在取景框里拖动就是专家画；通话条 ✎ 开后在玻璃上拖动就是现场人员画。</span></div>
+  <div class="proto-bar">
+    <span class="lbl">跳到状态</span>
+    <button class="go" data-goto="S1">S1 配对</button><button class="go" data-goto="S2">S2 权限被拒</button><button class="go y" data-goto="S3">S3 直播</button><button class="go" data-goto="S4">S4 我在画</button><button class="go" data-goto="S5">S5 已暂停</button><button class="go" data-goto="S6">S6 重连中</button><button class="go" data-goto="S7">S7 画面过期</button><button class="go" data-goto="S8">S8 画面不可用</button><button class="go" data-goto="S9">S9 结束确认</button><button class="go" data-goto="E1">E1 错 PIN</button><button class="go" data-goto="E3">E3 结束对话框</button>
+    <a class="go" href="preview.html" target="_blank" rel="noopener" style="text-decoration:none">在新标签打开 ↗</a>
+  </div>
+  <iframe id="proto" src="preview.html" title="借眼 v2 可交互原型"></iframe>
+  <div id="proto-status"></div>
+  <p class="tiny" style="margin-top:10px">原型内快捷键（先点一下原型让它取得焦点）：<span class="kbd">F8</span> 画面过期 / 恢复 · <span class="kbd">F9</span> 断网 / 恢复 · <span class="kbd">F10</span> 配对态 = 权限被拒 / 授权，直播态 = 画面不可用 / 恢复 · <span class="kbd">Ctrl+Z</span> 专家撤销。脚本钩子 <code>window.jieyan</code>：setPerm · dropNetwork · restoreNetwork · timeoutReconnect · setData · setPen · setFade · connect · undo · clearAll · endSession · state()。</p>
+</section>
+
+<footer class="foot">
+  借眼 Jieyan · 设计包 v2（design-doc.md，2026-10-19 评审 pass）· 本样稿 2026-10-20 · 空间应用黑灯工厂 站 2 设计 · 门 B。
+  真机才能验证的部分：VST 读回帧率与延迟、画面比例、相机内参与玻璃对齐误差、头锁定手感；模拟器用合成相机源验证配对、双向笔迹、撤销 / 清除 / 淡出、暂停、重连、确认流。
+</footer>
+
+</div>
+
+<script>
+(function(){
+  // 场景：全景（0 0 1600 900）/ 相机画面（160 90 1280 720，= 视野的 10%–90%）/ 通话条切片
+  var tpl = document.getElementById('scene-tpl');
+  function scene(vb){ var s = tpl.content.firstElementChild.cloneNode(true); if (vb) s.setAttribute('viewBox', vb); return s; }
+  document.querySelectorAll('[data-scene]').forEach(function(el){ el.insertBefore(scene('0 0 1600 900'), el.firstChild); });
+  document.querySelectorAll('[data-cam]').forEach(function(el){ el.insertBefore(scene('160 90 1280 720'), el.firstChild); });
+  document.querySelectorAll('[data-slice]').forEach(function(el){ el.insertBefore(scene('300 380 1200 300'), el.firstChild); });
+
+  // 原型驱动：通过 iframe 里的 window.jieyan 钩子把原型跳到某个状态
+  var frame = document.getElementById('proto');
+  var status = document.getElementById('proto-status');
+  function proto(){
+    try { var w = frame.contentWindow; if (w && w.jieyan && w.document) return { j: w.jieyan, d: w.document }; } catch (e) {}
+    return null;
+  }
+  function q(p, sel){ return p.d.querySelector(sel); }
+  function share(p, on){ var el = q(p, '#strip-share'); if (el) el.dispatchEvent(new CustomEvent('checked-change', { detail: { checked: on } })); }
+  function reset(p){
+    p.j.endSession();
+    var ge = q(p, '#gate-error'); if (ge) ge.textContent = '';
+    p.j.setPerm(true); p.j.setFade(false); p.j.setPen(false);
+    var st = q(p, '#strip'); if (st) st.classList.remove('confirming');
+    var dlg = q(p, '#dlg-end'); if (dlg) dlg.hidden = true;
+    share(p, true);
+  }
+  function live(p){ reset(p); p.j.connect(); p.j.setData('normal'); }
+  var GOTO = {
+    S1: function(p){ reset(p); },
+    S2: function(p){ reset(p); p.j.setPerm(false); },
+    S3: function(p){ live(p); },
+    S4: function(p){ live(p); p.j.setPen(true); },
+    S5: function(p){ live(p); share(p, false); },
+    S6: function(p){ live(p); p.j.dropNetwork(); },
+    S7: function(p){ live(p); p.j.setData('fallback'); },
+    S8: function(p){ live(p); p.j.setData('error'); },
+    S9: function(p){ live(p); var st = q(p, '#strip'); if (st) st.classList.add('confirming'); },
+    E1: function(p){ reset(p); p.j.connect('0000'); },
+    E3: function(p){ live(p); var dlg = q(p, '#dlg-end'); if (dlg) dlg.hidden = false; }
+  };
+  var NAMES = { S1:'配对', S2:'配对 · 权限被拒', S3:'直播', S4:'直播 · 我在画', S5:'已暂停共享', S6:'重连中', S7:'画面过期', S8:'画面不可用', S9:'结束确认（内联）', E1:'PIN 门 · 错 PIN', E3:'结束对话框' };
+  document.querySelectorAll('[data-goto]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-goto');
+      var p = proto();
+      document.getElementById('s9').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!p){ status.textContent = '原型还没加载完，或浏览器隔离了它：请直接在原型里操作（见下方快捷键），或点「在新标签打开」。'; return; }
+      try { GOTO[id](p); var s = p.j.state(); status.textContent = '原型已跳到 ' + id + ' ' + NAMES[id] + ' · state=' + s.state + ' · data=' + s.data + ' · pen=' + s.pen + ' · share=' + s.share; }
+      catch (e) { status.textContent = '跳转失败：' + e.message; }
+    });
+  });
+  frame.addEventListener('load', function(){ var p = proto(); status.textContent = p ? '原型已加载 · PIN 见左侧配对卡' : '原型已加载（本页无法读取其内部状态，按钮不可用；请直接操作或在新标签打开）'; });
+})();
+</script>
