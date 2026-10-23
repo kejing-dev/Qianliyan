@@ -18,4 +18,15 @@ object NetworkAddress {
             }
             null
         }.getOrNull()
+
+    /** Every usable LAN IPv4 of the moment (for the https certificate's SAN). */
+    fun allLanIps(): List<String> =
+        runCatching {
+            NetworkInterface.getNetworkInterfaces()?.toList().orEmpty()
+                .filter { it.isUp && !it.isLoopback }
+                .flatMap { it.inetAddresses.toList() }
+                .filterIsInstance<Inet4Address>()
+                .filter { !it.isLoopbackAddress && !it.isLinkLocalAddress }
+                .mapNotNull { it.hostAddress }
+        }.getOrDefault(emptyList())
 }

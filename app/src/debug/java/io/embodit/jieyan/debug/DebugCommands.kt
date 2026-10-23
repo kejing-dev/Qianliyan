@@ -26,6 +26,18 @@ import java.util.Locale
  * - `data` s=normal|stale|error   picture state (sticky until `data normal`)
  * - `reconnect` s=on|off|timeout  socket dropped / came back / 30 s passed
  * - `perm` s=denied|granted    camera permission result
+ *
+ * v3 (picture + voice; `state` also takes S10 S11[:fps] S3d S12 S13 S14[:worker|expert] S15[:insecure|denied]
+ * S6a S1u S2m[:both] S2s[:cam|mic|both] S8:perm|timeout|readback|novst)
+ * - `mute` s="worker on|off" | "expert on|off"   either side's mute
+ * - `speak` s="worker|expert [ms]"   inject a speaking level (S14) without sound
+ * - `expertmic` s=ok|insecure|denied   what the expert's browser can do (S15)
+ * - `drop` s=audio             close the voice socket only (S6a)   · `audio` s=on|off  mark it linked
+ * - `https` s=on|off           LAN https listener (off = S1u)
+ * - `never` s=cam|mic|both|off "don't ask again" rows (S2s)   · `mic` s=denied|granted
+ * - `fps` s=N                  emulator picture rate (S11 on the page below 8)
+ * - `tone` s=ms                 the headset sends a 440 Hz test tone instead of its microphone (device voice path)
+ * - `vst` a=W,H                restart the VST readback at W x H (device)   · `vstreset` forget the probed size
  * - `ui` s=<control>           press a control by name: pen undo clear share end confirm_yes confirm_no grant
  *
  * Reading back
@@ -55,6 +67,8 @@ internal object DebugCommands {
             "pointer" -> host.dispatch(SessionEvent.DebugPointer(if (numbers.size >= 2) StrokePoint(numbers[0].coerceIn(0f, 1f), numbers[1].coerceIn(0f, 1f)) else null))
             "pen" -> host.dispatch(SessionEvent.DebugPen(word == "on"))
             "share" -> host.dispatch(SessionEvent.DebugShare(word == "on"))
+            "mute", "speak", "expertmic", "drop", "audio", "https", "never", "mic", "fps", "vstreset", "tone" -> host.dispatch(SessionEvent.DebugVoice(cmd.lowercase(Locale.US), word))
+            "vst" -> host.dispatch(SessionEvent.DebugVst(numbers.getOrNull(0)?.toInt() ?: 512, numbers.getOrNull(1)?.toInt() ?: 512))
             "fade" -> host.dispatch(SessionEvent.DebugFade(word == "on"))
             "undo" -> host.dispatch(SessionEvent.UndoClicked)
             "clear" -> host.dispatch(SessionEvent.ClearClicked)

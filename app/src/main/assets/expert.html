@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>千里眼 · 专家台</title>
 <style>
-  /* 千里眼 (Qianliyan) expert console — chalk on slate (design-doc §3). Served by the headset at http://<ip>:8765 */
+  /* 千里眼 (Qianliyan) expert console — chalk on slate (design-doc §3, v3 §1.4 / §2.3). Served by the headset at <ip>:8765 (http), <ip>:8766 (https), localhost:8765 (USB) */
   :root{
     --slate:#20262A; --slate-deep:#161B1E; --glass:rgba(255,255,255,.08); --glass-2:rgba(255,255,255,.14);
     --line:rgba(255,255,255,.14); --label:#F3F4F5; --label-2:rgba(243,244,245,.66); --label-3:rgba(243,244,245,.42);
     --error:#FF5F52; --alert:#FF8A1F; --passable:#7CF2A3; --interaction:#FFE14D;
     --chalk-yellow:#FFE14D; --chalk-white:#F6F2E6; --chalk-pink:#FF8FB1; --chalk-blue:#8CD5FF; --ink:#1E1A0E; --live:#FF3B30;
+    --ar: 1.7778;
   }
   *{box-sizing:border-box} html,body{height:100%;margin:0}
   body{background:var(--slate);color:var(--label);font:500 14px/18px "Noto Sans","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -18,8 +19,8 @@
   button:disabled{cursor:default}
   .hidden{display:none !important}
 
-  /* ---- gate (E1) ---- */
-  #gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  /* ---- gate (E1), secure hint (E6) ---- */
+  .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
   .card{width:340px;background:var(--glass);border:1px solid var(--line);border-radius:28px;padding:28px 28px 24px;backdrop-filter:blur(20px)}
   .card h1{font-size:20px;line-height:26px;font-weight:600;margin:0 0 6px}
   .card p{margin:0 0 20px;color:var(--label-2)}
@@ -34,34 +35,66 @@
   .btn.ghost{background:var(--glass-2);color:var(--label)}
   .btn.danger{background:var(--error);color:#fff}
   .note{margin-top:16px;color:var(--label-3);font-size:12px;line-height:16px}
+  .steps{list-style:none;padding:0;margin:0 0 16px;display:flex;flex-direction:column;gap:10px}
+  .steps li{display:flex;gap:10px;align-items:flex-start;color:var(--label)}
+  .steps .n{flex:none;width:22px;height:22px;border-radius:50%;background:var(--glass-2);display:flex;align-items:center;justify-content:center;font:700 12px/1 inherit}
+  .steps .k{display:inline-block;padding:0 6px;border-radius:6px;background:var(--glass-2);font-weight:600}
+  .linkbtn{color:var(--label-2);font-size:12px;text-decoration:underline;margin-top:14px;display:block;width:100%;text-align:center}
 
   /* ---- console ---- */
   #console{position:fixed;inset:0;display:flex;flex-direction:column}
-  header{height:56px;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--line)}
+  header{height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--line)}
   header .brand{font-weight:600;font-size:16px}
   .pill{display:inline-flex;align-items:center;gap:8px;height:28px;border-radius:14px;padding:0 12px;background:var(--glass-2);font:600 12px/16px inherit}
   .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--label-3)}
   .pill.live .dot{background:var(--live);animation:breathe 1.8s ease-in-out infinite}
-  .pill.paused,.pill.reconnecting,.pill.stale{color:var(--alert)}
-  .pill.paused .dot,.pill.reconnecting .dot,.pill.stale .dot{background:var(--alert)}
+  .pill.paused,.pill.reconnecting,.pill.stale,.pill.low{color:var(--alert)}
+  .pill.paused .dot,.pill.reconnecting .dot,.pill.stale .dot,.pill.low .dot{background:var(--alert)}
+  .pill.error{color:var(--error)} .pill.error .dot{background:var(--error)}
   @keyframes breathe{0%,100%{opacity:1}50%{opacity:.35}}
   header .meta{color:var(--label-2);font:600 12px/16px inherit;font-variant-numeric:tabular-nums}
+  header .meta.low{color:var(--alert)}
   header .spacer{flex:1}
+  .hchip{display:inline-flex;align-items:center;gap:6px;height:24px;border-radius:12px;padding:0 10px;background:var(--glass);border:1px solid var(--line);font:600 12px/16px inherit;color:var(--label-2)}
+  .hchip.alert{color:var(--alert);border-color:rgba(255,138,31,.5)}
+  .wave{display:inline-flex;align-items:center;gap:2px;height:14px}
+  .wave i{display:block;width:3px;border-radius:2px;background:var(--passable);animation:wv .6s ease-in-out infinite}
+  .wave i:nth-child(2){animation-delay:.2s} .wave i:nth-child(3){animation-delay:.4s}
+  @keyframes wv{0%,100%{height:5px}50%{height:14px}}
+  .mic{position:relative;height:36px;border-radius:18px;padding:0 14px 0 10px;display:inline-flex;align-items:center;gap:6px;background:var(--glass-2);font-weight:600}
+  .mic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .mic .ring{position:absolute;inset:-4px;border-radius:22px;border:2px solid var(--passable);opacity:0;pointer-events:none;transition:opacity .08s}
+  .mic.muted{background:var(--alert);color:var(--ink)}
+  .mic:disabled{opacity:.3}
+  .mic kbd{font:600 11px/1 inherit;opacity:.6;border:1px solid currentColor;border-radius:4px;padding:1px 4px}
+  .bar{flex:none;display:flex;align-items:center;gap:12px;padding:8px 20px;font-weight:600}
+  .bar.alert{background:rgba(255,138,31,.16);color:var(--alert);border-bottom:1px solid rgba(255,138,31,.4)}
+  .bar.soft{color:var(--label-2);font-weight:500;padding:6px 20px;border-bottom:1px solid var(--line)}
+  .bar .act{margin-left:auto;color:var(--interaction);font-weight:600}
+  .bar.soft .act{color:var(--label)}
   main{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;min-height:0}
-  .stage{display:flex;flex-direction:column;gap:12px;max-width:100%;max-height:100%}
-  .vf-wrap{position:relative;background:var(--slate-deep);border-radius:20px;overflow:hidden;aspect-ratio:16/9;max-height:calc(100vh - 56px - 40px - 68px);max-width:calc((100vh - 56px - 40px - 68px) * 16 / 9);width:min(100%, 1280px)}
+  .stage{display:flex;flex-direction:column;gap:12px;max-width:100%;max-height:100%;align-items:center}
+  .vf-wrap{position:relative;background:var(--slate-deep);border-radius:20px;overflow:hidden;aspect-ratio:var(--ar);width:min(1280px, calc(100vw - 40px), calc((100vh - 220px) * var(--ar)))}
   .vf-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   #frame{z-index:1} #ink{z-index:2;cursor:crosshair}
   .vf-wrap.stale #frame{filter:grayscale(1) brightness(.55)}
-  .vf-wrap.nopen #ink{cursor:default}
+  .vf-wrap.blank #frame{visibility:hidden}
   .chip{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:6px;height:28px;border-radius:14px;padding:0 12px;background:rgba(32,38,42,.78);border:1px solid var(--line);font:600 12px/16px inherit;backdrop-filter:blur(10px)}
   .chip.tl{left:16px;top:16px;color:var(--chalk-blue)} .chip.tr{right:16px;top:16px;color:var(--ink);background:var(--alert);border-color:transparent}
+  .chip.tr2{right:16px;top:16px;color:var(--alert);border-color:rgba(255,138,31,.6)}
+  .chip.bl{left:16px;bottom:16px;color:var(--label);border-color:var(--alert)}
+  .chip.bl2{left:16px;bottom:52px;color:var(--label);background:rgba(32,38,42,.92);cursor:pointer}
   .vf-hint{position:absolute;z-index:3;left:0;right:0;bottom:40px;text-align:center;color:var(--label-2);font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
   .overlay{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(22,27,30,.72);backdrop-filter:blur(6px);text-align:center;padding:24px}
+  .overlay.see{background:var(--slate-deep);backdrop-filter:none;pointer-events:none}
   .overlay .big{font-size:20px;line-height:26px;font-weight:600}
-  .overlay .sub{color:var(--label-2);max-width:380px}
+  .overlay .sub{color:var(--label-2);max-width:420px}
+  .overlay .btn{pointer-events:auto}
   .ring{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--alert);animation:spin 1s linear infinite}
+  .ring.calm{border-top-color:var(--interaction)}
   @keyframes spin{to{transform:rotate(360deg)}}
+  .btn.retry{background:var(--interaction);color:var(--ink);height:40px;border-radius:20px;margin-top:6px}
+  .btn.retry:disabled{opacity:.45}
 
   /* ---- chalk tray ---- */
   .tray{height:56px;border-radius:28px;background:var(--glass);border:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 12px;align-self:center;backdrop-filter:blur(20px)}
@@ -94,15 +127,32 @@
 </head>
 <body>
 
+<!-- E6 · secure address hint (LAN http with https available) -->
+<section id="secure" class="screen hidden">
+  <div class="card">
+    <h1>为了能通话，要换到安全地址</h1>
+    <p>浏览器只在安全地址上开麦克风。换一次就行，以后这台电脑直接进。</p>
+    <ol class="steps">
+      <li><span class="n">1</span><span>点下面的 <span class="k">继续</span></span></li>
+      <li><span class="n">2</span><span>浏览器提示「不安全」→ 点 <span class="k">高级</span>（或「详细信息」）</span></li>
+      <li><span class="n">3</span><span>点 <span class="k">继续前往</span></span></li>
+    </ol>
+    <div class="note" style="margin:0 0 16px">这是因为证书是头显自己签的，只在你们这台头显和电脑之间用。</div>
+    <button class="btn primary" id="secure-go">继续</button>
+    <button class="linkbtn" id="secure-skip">先不通话，只看画面</button>
+    <div class="note">看不到「继续前往」？是公司浏览器策略拦了，请用手机热点 + 其他浏览器，或 USB（头显配对卡上第 ② 条）。</div>
+  </div>
+</section>
+
 <!-- E1 · PIN gate -->
-<section id="gate" data-state="empty">
+<section id="gate" class="screen" data-state="empty">
   <div class="card">
     <h1>连接到现场</h1>
     <p>在头显的配对卡上看 4 位 PIN，输入后连接。</p>
     <div class="field" id="pin-field"><input id="pin" inputmode="numeric" maxlength="4" placeholder="····" autocomplete="off" autofocus></div>
     <div class="errline" id="gate-err"></div>
     <button class="btn primary" id="connect" disabled>连接</button>
-    <div class="note" id="gate-note">浏览器与头显需在同一 Wi-Fi。</div>
+    <div class="note" id="gate-note">连接后浏览器会问能不能用麦克风，点「允许」就能和现场通话。</div>
   </div>
 </section>
 
@@ -111,10 +161,19 @@
   <header>
     <span class="brand">千里眼 · 专家台</span>
     <span class="pill live" id="pill"><span class="dot"></span><span id="pill-text">直播</span></span>
-    <span class="meta" id="meta">— ms · 0 fps</span>
+    <span class="meta" id="meta">— fps · — ms</span>
+    <span class="hchip hidden" id="hc-muted">现场已静音</span>
+    <span class="hchip hidden" id="hc-speaking"><span class="wave"><i></i><i></i><i></i></span>现场在说话</span>
+    <span class="hchip alert hidden" id="hc-voice">语音重连中</span>
+    <span class="hchip alert hidden" id="hc-nomic">现场麦克风未开</span>
     <span class="spacer"></span>
+    <button class="mic" id="mic-btn" title="静音 (M)"><span class="ring" id="mic-ring"></span>
+      <svg viewBox="0 0 24 24" id="mic-ico"><path d="M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/><path id="mic-slash" d="M4 4l16 16" class="hidden"/></svg>
+      <span id="mic-text">静音</span><kbd>M</kbd></button>
     <button class="btn ghost" id="end-btn" style="height:36px;border-radius:18px">结束</button>
   </header>
+  <div class="bar alert hidden" id="mic-bar"><span id="mic-bar-text"></span><button class="act hidden" id="mic-bar-act"></button></div>
+  <div class="bar soft hidden" id="hp-hint"><span>🎧 戴耳机通话效果最好</span><button class="act" id="hp-ok">知道了</button></div>
   <main>
     <div class="stage">
       <div class="vf-wrap" id="vf">
@@ -122,10 +181,14 @@
         <canvas id="ink" width="1280" height="720"></canvas>
         <span class="chip tl hidden" id="chip-pen">✎ 对方画笔已开</span>
         <span class="chip tr hidden" id="chip-stale">⏱ 画面 3 秒前</span>
+        <span class="chip tr2 hidden" id="chip-low">画面有点卡 · 已自动降画质</span>
+        <span class="chip bl hidden" id="chip-demo">演示画面 · 模拟器没有摄像头</span>
+        <button class="chip bl2 hidden" id="chip-unmute">🔇 点一下恢复声音</button>
         <div class="vf-hint" id="vf-hint">直接在画面上画，现场人员立刻看到 · 悬停即指点</div>
-        <div class="overlay hidden" id="vf-paused"><div class="big">⏸ 对方已暂停共享</div><div class="sub">现场人员关掉了共享，画面停在最后一帧。再开时自动恢复。</div></div>
-        <div class="overlay hidden" id="vf-reconnecting"><div class="ring"></div><div class="big">重连中…</div><div class="sub">与头显的连接断了，正在每 2 秒重试；30 秒内恢复则继续。</div></div>
-        <div class="overlay hidden" id="vf-error"><div class="big">⚠ 画面不可用</div><div class="sub">头显未能读取摄像头画面（权限或读回失败）。笔迹仍会同步。</div></div>
+        <div class="overlay see hidden" id="vf-starting"><div class="ring calm"></div><div class="big">正在打开头显摄像头…</div><div class="sub">通常 1–3 秒</div></div>
+        <div class="overlay hidden" id="vf-paused"><div class="big">⏸ 对方已暂停画面</div><div class="sub">还能继续通话。现场人员再开共享时画面自动恢复。</div></div>
+        <div class="overlay hidden" id="vf-reconnecting"><div class="ring"></div><div class="big">重连中…</div><div class="sub">与头显的连接断了，正在每 2 秒重试；30 秒内恢复则继续，通话一起恢复。</div></div>
+        <div class="overlay hidden" id="vf-error"><div class="big">⚠ 画面不可用</div><div class="sub" id="vf-error-text">读取头显摄像头失败 · 点 [重试]，还不行请重启千里眼</div><button class="btn retry" id="retry">重试</button></div>
       </div>
       <div class="tray" id="tray">
         <button class="sw on" data-color="#FFE14D" title="黄"><i style="background:#FFE14D"></i></button>
@@ -149,7 +212,7 @@
 
 <dialog id="end-dialog">
   <h2>结束会话？</h2>
-  <p>头显会停止共享并回到配对界面，笔迹全部清除。</p>
+  <p>头显会停止共享并回到配对界面，通话挂断，笔迹全部清除。</p>
   <div class="row"><button class="btn ghost" id="dlg-cancel">取消</button><button class="btn danger" id="dlg-end">结束</button></div>
 </dialog>
 
@@ -157,38 +220,56 @@
 (function(){
   'use strict';
   const $ = id => document.getElementById(id);
-  const gate = $('gate'), con = $('console'), vf = $('vf');
+  const gate = $('gate'), con = $('console'), vf = $('vf'), secure = $('secure');
   const frameC = $('frame'), inkC = $('ink');
   const fctx = frameC.getContext('2d'), ictx = inkC.getContext('2d');
-  const REF_W = 1280, REF_H = 720;
+  const REF_W = 1280;
+  const isLocal = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 
   // ---------------- state (mirror of the headset) ----------------
-  let ws = null, session = sessionStorage.getItem('jieyan.session') || null, pin = '';
-  let phase = 'lobby', share = true, workerPen = false, data = 'normal', fadeOn = false;
+  let ws = null, session = sessionStorage.getItem('jieyan.session') || null, pin = sessionStorage.getItem('jieyan.pin') || '';
+  let phase = 'lobby', share = true, workerPen = false, data = 'normal', reason = 'readback', fadeOn = false;
+  let workerMuted = false, workerMic = true, link = isLocal ? 'usb' : 'wifi', demo = false;
   let strokes = [];           // {id, owner, color, width, pts:[[x,y]], endedAt}
   let live = null;            // my stroke under the mouse
   let color = '#FFE14D', width = 7;
   let pointer = null, pointerAt = 0, lastPointerSent = 0;
   let lastFrameAt = 0, frames = 0, fpsWindowStart = performance.now(), fps = 0, rtt = null;
+  let lowSec = 0, okSec = 0, lowFps = false, hadFrames = false;
+  let clockOffset = null, bestRtt = 1e9, latency = null; // headset ms - page ms
   let reconnectTimer = null, wantReconnect = false, ended = false, lastCleared = null;
-  let imgW = 640, imgH = 360;
+  let imgW = 640, imgH = 360, fx = 609.5, fy = 609.5;
+
+  // ---------------- E6: LAN http -> https (design v3 §2.2) ----------------
+  function maybeSecureHint(){
+    if (location.protocol !== 'http:' || isLocal || sessionStorage.getItem('jieyan.httpOnly')) return;
+    fetch('/info').then(r => r.json()).then(info => {
+      if (!info.https) return;
+      gate.classList.add('hidden'); secure.classList.remove('hidden');
+      $('secure-go').onclick = () => { location.href = 'https://' + location.hostname + ':' + info.httpsPort + '/'; };
+      $('secure-skip').onclick = () => { sessionStorage.setItem('jieyan.httpOnly', '1'); secure.classList.add('hidden'); gate.classList.remove('hidden'); pinInput.focus(); };
+    }).catch(() => {});
+  }
 
   // ---------------- gate ----------------
   const pinInput = $('pin'), connectBtn = $('connect'), gateErr = $('gate-err'), pinField = $('pin-field');
   pinInput.addEventListener('input', () => { pinInput.value = pinInput.value.replace(/\D/g,'').slice(0,4); connectBtn.disabled = pinInput.value.length !== 4; pinField.classList.remove('error'); gateErr.textContent=''; });
   pinInput.addEventListener('keydown', e => { if (e.key === 'Enter' && pinInput.value.length === 4) connect(); });
   connectBtn.addEventListener('click', connect);
+  if (!window.isSecureContext) $('gate-note').textContent = '这个地址只能看画面和画笔；要通话请用 https 地址或 USB 打开 localhost:8765。';
 
   function showGate(state, msg){
-    gate.dataset.state = state; con.classList.add('hidden'); gate.classList.remove('hidden');
+    gate.dataset.state = state; con.classList.add('hidden'); secure.classList.add('hidden'); gate.classList.remove('hidden');
     gateErr.textContent = msg || ''; pinField.classList.toggle('error', state === 'pinError');
     if (state !== 'pinError') { pinInput.value = ''; connectBtn.disabled = true; }
     setTimeout(() => pinInput.focus(), 50);
   }
-  function showConsole(){ gate.classList.add('hidden'); con.classList.remove('hidden'); }
+  function showConsole(){ gate.classList.add('hidden'); secure.classList.add('hidden'); con.classList.remove('hidden'); }
 
   function connect(){
     pin = pinInput.value; ended = false; wantReconnect = false;
+    sessionStorage.setItem('jieyan.pin', pin);
+    audio.unlock(true);          // the click is the user gesture: microphone + playback (v3 C6 / T19)
     open(false);
   }
 
@@ -207,6 +288,7 @@
   }
   function onClosed(){
     ws = null;
+    audio.closeLink();
     if (ended) return;
     if (session && wantReconnect) { setState('reconnecting'); if (!reconnectTimer) reconnectTimer = setInterval(() => open(true), 2000); }
     else if (!gate.classList.contains('hidden')) { /* still at the gate */ }
@@ -216,23 +298,41 @@
 
   function send(o){ if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
 
+  function setImage(m){
+    if (m.imageW) { imgW = m.imageW; imgH = m.imageH; }
+    if (m.fx) { fx = m.fx; fy = m.fy; }
+    if (frameC.width !== imgW || frameC.height !== imgH) { frameC.width = imgW; frameC.height = imgH; }
+    // the viewfinder shows the true field of view: (W/fx) : (H/fy), not a fixed 16:9 (v3 §1.3)
+    const ar = (imgW / fx) / (imgH / fy);
+    document.documentElement.style.setProperty('--ar', ar.toFixed(4));
+    const ih = Math.round(REF_W / ar);
+    if (inkC.height !== ih) { inkC.width = REF_W; inkC.height = ih; draw(); }
+  }
+
   function onJson(m){
     switch (m.t) {
       case 'welcome':
         session = m.session; sessionStorage.setItem('jieyan.session', session);
-        imgW = m.imageW || 640; imgH = m.imageH || 360; frameC.width = imgW; frameC.height = imgH;
-        strokes = []; live = null; pointer = null; // the full state follows the welcome
-        wantReconnect = true; stopReconnect(); showConsole(); setState('live'); break;
+        setImage(m); link = m.link || link; demo = !!m.demo;
+        strokes = []; live = null; pointer = null; hadFrames = false; lowFps = false; lowSec = okSec = 0;
+        wantReconnect = true; stopReconnect(); showConsole(); setState('live');
+        $('hp-hint').classList.toggle('hidden', sessionStorage.getItem('jieyan.hpOk') === session);
+        audio.openLink();
+        break;
       case 'reject':
         wantReconnect = false; stopReconnect();
         if (m.reason === 'pin') showGate('pinError', 'PIN 不对，再看一眼头显上的数字');
         else if (m.reason === 'locked') showGate('pinError', '连错 5 次，60 秒后再试');
         else if (m.reason === 'busy') showGate('empty', '已有协助者连接');
         else showGate('empty', '被拒绝：' + m.reason);
+        if (!session) sessionStorage.removeItem('jieyan.session');
         break;
       case 'state':
-        phase = m.phase; share = !!m.share; workerPen = !!m.pen; data = m.data || 'normal'; fadeOn = !!m.fade;
+        phase = m.phase; share = !!m.share; workerPen = !!m.pen; data = m.data || 'normal'; reason = m.reason || 'readback'; fadeOn = !!m.fade;
+        workerMuted = !!m.workerMuted; workerMic = m.workerMic !== false;
+        if (typeof m.expertMuted === 'boolean' && m.expertMuted !== audio.muted && !audio.mutePending) audio.setMuted(m.expertMuted, false);
         strokes = (m.strokes || []).map(norm); setFadeUi(); setState(phase); break;
+      case 'video': setImage(m); break;
       case 'stroke.begin': { const s = norm(m); strokes = strokes.filter(x => x.id !== s.id); strokes.push(s); break; }
       case 'stroke.point': { const s = strokes.find(x => x.id === m.id); if (s) s.pts.push(...(m.pts || [])); break; }
       case 'stroke.end': { const s = strokes.find(x => x.id === m.id); if (s) s.endedAt = performance.now(); break; }
@@ -242,8 +342,14 @@
       case 'pointer': break;
       case 'pen': workerPen = !!m.on; setChips(); break;
       case 'fade': fadeOn = !!m.on; setFadeUi(); break;
-      case 'end': ended = true; wantReconnect = false; stopReconnect(); session = null; sessionStorage.removeItem('jieyan.session'); showGate('sessionEnded', m.reason === 'expert' ? '' : '会话已结束'); break;
-      case 'pong': rtt = Math.round(performance.now() - m.ts); break;
+      case 'end': ended = true; wantReconnect = false; stopReconnect(); audio.hangup(); session = null; sessionStorage.removeItem('jieyan.session'); showGate('sessionEnded', m.reason === 'expert' ? '' : '会话已结束'); break;
+      case 'pong': {
+        const now = performance.now(); rtt = Math.round(now - m.ts);
+        // clock offset from the fastest recent round trip (headset elapsedRealtime minus page clock)
+        if (m.hs && rtt <= bestRtt + 5) { bestRtt = Math.min(bestRtt, rtt); clockOffset = m.hs - (m.ts + rtt / 2); }
+        bestRtt += 2; // let the best slowly age so a changed path is picked up
+        break;
+      }
     }
     draw();
   }
@@ -251,38 +357,232 @@
 
   function onFrame(buf){
     const dv = new DataView(buf);
+    const tsHi = dv.getUint32(4), tsLo = dv.getUint32(8);
+    const ts = tsHi * 4294967296 + tsLo;
     const jpeg = new Blob([buf.slice(12)], {type:'image/jpeg'});
-    createImageBitmap(jpeg).then(bmp => { fctx.drawImage(bmp, 0, 0, frameC.width, frameC.height); bmp.close(); }).catch(() => {});
-    lastFrameAt = performance.now(); frames++;
+    createImageBitmap(jpeg).then(bmp => {
+      fctx.drawImage(bmp, 0, 0, frameC.width, frameC.height); bmp.close();
+      // latency = shown now - read back on the headset (the VST exposure before the readback is not in it: "约")
+      if (clockOffset != null) { const l = performance.now() - (ts - clockOffset); if (l > -50 && l < 5000) latency = latency == null ? l : latency * 0.85 + l * 0.15; }
+    }).catch(() => {});
+    lastFrameAt = performance.now(); frames++; hadFrames = true;
     if (data === 'stale') { data = 'normal'; setState(phase); }
   }
 
   // ---------------- state -> UI ----------------
   const pill = $('pill'), pillText = $('pill-text');
+  const ERROR_TEXT = {
+    perm: '头显没有摄像头权限 · 请现场人员在配对卡上点 [授权]',
+    timeout: '头显 5 秒内没给出画面 · 点 [重试]',
+    readback: '读取头显摄像头失败 · 点 [重试]，还不行请重启千里眼',
+    novst: '这台设备没有透视摄像头'
+  };
   function setState(ph){
     phase = ph;
     con.dataset.state = ph; con.classList.toggle('worker-pen', workerPen);
-    con.classList.toggle('data-fallback', data === 'stale'); con.classList.toggle('data-error', data === 'error');
-    const overlays = {paused: ph === 'paused', reconnecting: ph === 'reconnecting', error: ph === 'live' && data === 'error'};
-    $('vf-paused').classList.toggle('hidden', !overlays.paused);
-    $('vf-reconnecting').classList.toggle('hidden', !overlays.reconnecting);
-    $('vf-error').classList.toggle('hidden', !overlays.error);
-    vf.classList.toggle('stale', ph === 'live' && data === 'stale');
+    const live = ph === 'live';
+    con.classList.toggle('data-fallback', live && data === 'stale'); con.classList.toggle('data-error', live && data === 'error');
+    $('vf-paused').classList.toggle('hidden', ph !== 'paused');
+    $('vf-reconnecting').classList.toggle('hidden', ph !== 'reconnecting');
+    $('vf-error').classList.toggle('hidden', !(live && data === 'error'));
+    $('vf-starting').classList.toggle('hidden', !(live && data === 'starting'));
+    $('vf-error-text').textContent = ERROR_TEXT[reason] || ERROR_TEXT.readback;
+    $('retry').classList.toggle('hidden', reason === 'novst');
+    vf.classList.toggle('stale', live && data === 'stale');
+    vf.classList.toggle('blank', live && (data === 'error' || data === 'starting'));
     $('tray').classList.toggle('disabled', ph === 'reconnecting');
     let cls = 'pill', txt = '直播';
     if (ph === 'reconnecting') { cls += ' reconnecting'; txt = '重连中'; }
     else if (ph === 'paused') { cls += ' paused'; txt = '已暂停'; }
+    else if (data === 'error') { cls += ' error'; txt = '画面不可用'; }
+    else if (data === 'starting') { cls += ' stale'; txt = '正在打开'; }
     else if (data === 'stale') { cls += ' stale'; txt = '画面过期'; }
-    else if (data === 'error') { cls += ' paused'; txt = '画面不可用'; }
+    else if (lowFps) { cls += ' low'; txt = '卡顿'; }
     else { cls += ' live'; }
     pill.className = cls; pillText.textContent = txt;
-    setChips();
+    setChips(); audio.render();
   }
   function setChips(){
+    const live = phase === 'live';
     $('chip-pen').classList.toggle('hidden', !workerPen);
-    $('chip-stale').classList.toggle('hidden', !(phase === 'live' && data === 'stale'));
+    $('chip-stale').classList.toggle('hidden', !(live && data === 'stale'));
+    $('chip-low').classList.toggle('hidden', !(live && data === 'normal' && lowFps));
+    $('chip-demo').classList.toggle('hidden', !(demo && live && data !== 'error' && data !== 'starting'));
   }
   function setFadeUi(){ $('fade').classList.toggle('on', fadeOn); }
+  function metaText(){
+    const live = phase === 'live' && data !== 'stale' && data !== 'error' && data !== 'starting';
+    const l = latency == null ? '—' : Math.round(latency / 10) * 10;
+    const via = link === 'usb' ? 'USB' : 'Wi-Fi';
+    if (!live) return '— fps · ' + via;
+    return fps + ' fps · 约 ' + l + ' ms · ' + via;
+  }
+
+  // retry (T16): at least 3 s between two tries, counted down on the key
+  let retryAt = 0;
+  $('retry').addEventListener('click', () => { if (performance.now() < retryAt) return; retryAt = performance.now() + 3000; send({t:'video.retry'}); tickRetry(); });
+  function tickRetry(){
+    const b = $('retry'); const left = Math.ceil((retryAt - performance.now()) / 1000);
+    if (left > 0) { b.disabled = true; b.textContent = '重试（' + left + '）'; setTimeout(tickRetry, 250); } else { b.disabled = false; b.textContent = '重试'; }
+  }
+
+  // ---------------- voice (v3 §2.1): /audio, 16 kHz PCM16, 20 ms packets ----------------
+  const audio = (function(){
+    const RATE = 16000, FRAME = 320, PRIME = 960, CAP = 3200;
+    let ctx = null, mic = null, capNode = null, playNode = null, aws = null, retryTimer = null, seq = 0, lastMutedSent = 0;
+    let micState = window.isSecureContext && navigator.mediaDevices ? 'unknown' : 'insecure';
+    let selfLevel = 0, remoteLevel = 0, remoteSpeakUntil = 0, remoteAbove = 0, selfSpeakUntil = 0, duckUntil = 0, linkedOnce = false, down = false;
+    const api = { muted: false, mutePending: false, halfDuplex: true };
+    const worklet = `
+      class Cap extends AudioWorkletProcessor {
+        constructor(){ super(); this.buf = new Float32Array(${FRAME}); this.n = 0; }
+        process(inputs){ const ch = inputs[0] && inputs[0][0]; if (!ch) return true;
+          for (let i = 0; i < ch.length; i++) { this.buf[this.n++] = ch[i]; if (this.n === ${FRAME}) { this.port.postMessage(this.buf.slice(0)); this.n = 0; } }
+          return true; } }
+      class Play extends AudioWorkletProcessor {
+        constructor(){ super(); this.q = new Float32Array(${CAP} * 2); this.r = 0; this.w = 0; this.primed = false;
+          this.port.onmessage = e => { const d = e.data; for (let i = 0; i < d.length; i++) { this.q[this.w % this.q.length] = d[i]; this.w++; }
+            if (this.w - this.r > ${CAP}) this.r = this.w - ${CAP}; }; }
+        process(_, outputs){ const out = outputs[0][0]; const have = this.w - this.r;
+          if (!this.primed && have >= ${PRIME}) this.primed = true;
+          for (let i = 0; i < out.length; i++) { if (this.primed && this.r < this.w) { out[i] = this.q[this.r % this.q.length]; this.r++; } else { out[i] = 0; this.primed = false; } }
+          return true; } }
+      registerProcessor('jy-cap', Cap); registerProcessor('jy-play', Play);`;
+    function lvl(f){ let s = 0; for (let i = 0; i < f.length; i++) s += f[i] * f[i]; const rms = Math.sqrt(s / f.length) || 1e-6; return Math.max(0, Math.min(1, (20 * Math.log10(rms) + 50) / 40)); }
+    async function ensureCtx(){
+      if (ctx) return ctx;
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: RATE}); } catch(e) { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      ctx.onstatechange = () => render();
+      // AudioWorklet exists only in a secure context; on LAN http (E4: listen-only) the fallback player below schedules buffers
+      if (ctx.audioWorklet) {
+        const url = URL.createObjectURL(new Blob([worklet], {type:'application/javascript'}));
+        await ctx.audioWorklet.addModule(url);
+        playNode = new AudioWorkletNode(ctx, 'jy-play', {numberOfInputs: 0, outputChannelCount: [1]});
+        playNode.connect(ctx.destination);
+      }
+      return ctx;
+    }
+    async function unlock(withMic){
+      try { await ensureCtx(); if (ctx.state !== 'running') await ctx.resume(); } catch(e) { console.warn('audio', e); }
+      if (withMic && !mic && micState !== 'insecure' && ctx && ctx.audioWorklet) {
+        try {
+          mic = await navigator.mediaDevices.getUserMedia({audio: {echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1}});
+          const src = ctx.createMediaStreamSource(mic);
+          capNode = new AudioWorkletNode(ctx, 'jy-cap', {numberOfOutputs: 0});
+          capNode.port.onmessage = e => onCapture(e.data);
+          src.connect(capNode);
+          micState = 'ok';
+        } catch(e) { micState = 'denied'; console.warn('mic', e); }
+      }
+      send({t:'mic', state: micState === 'unknown' ? 'ok' : micState});
+      render();
+    }
+    function onCapture(f){
+      const now = performance.now();
+      selfLevel = api.muted ? 0 : Math.max(lvl(f), selfLevel * 0.8);
+      if (selfLevel >= 0.35) selfSpeakUntil = now + 300;
+      if (!aws || aws.readyState !== 1) return;
+      // echo fallback (v3 §2.1): while the headset's voice plays, the expert's microphone holds (half duplex, 300 ms after)
+      const ducked = api.halfDuplex && now < duckUntil;
+      if (api.muted || ducked) {
+        if (now - lastMutedSent >= 200) { lastMutedSent = now; const p = new Uint8Array(3); p[0] = (seq >> 8) & 255; p[1] = seq & 255; p[2] = api.muted ? 1 : 2; seq = (seq + 1) & 65535; aws.send(p.buffer); }
+        return;
+      }
+      const p = new ArrayBuffer(3 + f.length * 2), dv = new DataView(p);
+      dv.setUint16(0, seq); dv.setUint8(2, 0); seq = (seq + 1) & 65535;
+      for (let i = 0; i < f.length; i++) { const v = Math.max(-1, Math.min(1, f[i])); dv.setInt16(3 + i * 2, v < 0 ? v * 32768 : v * 32767, true); }
+      aws.send(p);
+    }
+    function onPacket(buf){
+      if (buf.byteLength < 3) return;
+      const flags = new Uint8Array(buf, 2, 1)[0];
+      const n = (buf.byteLength - 3) >> 1; if (!n) { remoteLevel = 0; return; }
+      const dv = new DataView(buf), f = new Float32Array(n);
+      for (let i = 0; i < n; i++) f[i] = dv.getInt16(3 + i * 2, true) / 32768;
+      const now = performance.now(); const l = lvl(f);
+      remoteLevel = l;
+      if (l >= 0.35 && !(flags & 1)) { if (!remoteAbove) remoteAbove = now; if (now - remoteAbove >= 100) { remoteSpeakUntil = now + 300; duckUntil = now + 300; } } else remoteAbove = 0;
+      if (playNode) playNode.port.postMessage(f); else playFallback(f);
+    }
+    let nextT = 0;
+    function playFallback(f){
+      if (!ctx || ctx.state !== 'running') return;
+      const b = ctx.createBuffer(1, f.length, RATE); b.copyToChannel(f, 0);
+      const src = ctx.createBufferSource(); src.buffer = b; src.connect(ctx.destination);
+      const now = ctx.currentTime;
+      // same budget as the worklet: start 60 ms ahead, never more than 200 ms queued
+      if (nextT < now + 0.01 || nextT > now + 0.2) nextT = now + 0.06;
+      src.start(nextT); nextT += b.duration;
+    }
+    function openLink(){
+      if (!session) return;
+      if (aws) { try { aws.onclose = null; aws.close(); } catch(e){} }
+      const url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/audio?session=' + encodeURIComponent(session);
+      try { aws = new WebSocket(url); } catch(e) { scheduleRetry(); return; }
+      aws.binaryType = 'arraybuffer';
+      aws.onopen = () => { down = false; if (retryTimer) { clearInterval(retryTimer); retryTimer = null; } if (!linkedOnce) { linkedOnce = true; chime(true); } send({t:'mic', state: micState === 'unknown' ? 'ok' : micState}); send({t:'mute', on: api.muted}); render(); };
+      aws.onmessage = ev => onPacket(ev.data);
+      aws.onclose = () => { aws = null; if (ws && ws.readyState === 1 && !ended) { down = true; scheduleRetry(); } render(); };
+      aws.onerror = () => {};
+    }
+    function scheduleRetry(){ if (!retryTimer) retryTimer = setInterval(() => { if (!aws && ws && ws.readyState === 1 && session) openLink(); }, 2000); }
+    function closeLink(){ if (retryTimer) { clearInterval(retryTimer); retryTimer = null; } if (aws) { try { aws.onclose = null; aws.close(); } catch(e){} aws = null; } down = false; render(); }
+    function hangup(){ closeLink(); chime(false); linkedOnce = false; }
+    function chime(rising){
+      if (!ctx || ctx.state !== 'running') return;
+      const t0 = ctx.currentTime, o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.setValueAtTime(rising ? 660 : 880, t0); o.frequency.setValueAtTime(rising ? 880 : 660, t0 + 0.15);
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.18, t0 + 0.01); g.gain.setValueAtTime(0.18, t0 + 0.27); g.gain.linearRampToValueAtTime(0, t0 + 0.3);
+      o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0 + 0.32);
+    }
+    function setMuted(on, tell){ api.muted = on; if (tell) { api.mutePending = true; send({t:'mute', on}); setTimeout(() => api.mutePending = false, 600); } render(); }
+    function render(){
+      const inCall = !con.classList.contains('hidden') && (phase === 'live' || phase === 'paused');
+      const canTalk = micState === 'ok' || micState === 'unknown';
+      const btn = $('mic-btn');
+      btn.disabled = !inCall || phase === 'reconnecting' || down || !canTalk || !aws;
+      btn.classList.toggle('muted', api.muted && canTalk);
+      $('mic-slash').classList.toggle('hidden', !(api.muted || !canTalk));
+      $('mic-text').textContent = api.muted ? '已静音' : '静音';
+      // E4 / E5 bar
+      const bar = $('mic-bar'), act = $('mic-bar-act');
+      if (inCall && micState === 'insecure') {
+        bar.classList.remove('hidden'); act.classList.add('hidden');
+        $('mic-bar-text').textContent = '这个地址浏览器不给开麦克风。要说话：用 USB 打开 localhost:8765，或换 https 地址 →';
+        fetch('/info').then(r => r.json()).then(i => { if (i.https) { act.textContent = '换 https 地址'; act.classList.remove('hidden'); act.onclick = () => { location.href = 'https://' + location.hostname + ':' + i.httpsPort + '/'; }; } }).catch(() => {});
+      } else if (inCall && micState === 'denied') {
+        bar.classList.remove('hidden'); act.classList.remove('hidden'); act.textContent = '重试';
+        $('mic-bar-text').textContent = '浏览器拦了麦克风：点地址栏左侧 🔒 → 麦克风 → 允许，再点 [重试]';
+        act.onclick = () => { micState = 'unknown'; unlock(true); };
+      } else bar.classList.add('hidden');
+      $('hc-muted').classList.toggle('hidden', !(inCall && workerMuted));
+      $('hc-voice').classList.toggle('hidden', !(inCall && down && phase !== 'reconnecting'));
+      $('hc-nomic').classList.toggle('hidden', !(inCall && !workerMic));
+      // E7: playback blocked until a click (page refreshed and reconnected by itself)
+      $('chip-unmute').classList.toggle('hidden', !(inCall && ctx && ctx.state !== 'running'));
+    }
+    function tick(){
+      const now = performance.now();
+      const inCall = phase === 'live' || phase === 'paused';
+      $('hc-speaking').classList.toggle('hidden', !(inCall && aws && !workerMuted && now < remoteSpeakUntil));
+      selfLevel *= 0.92;
+      const ring = $('mic-ring'); ring.style.opacity = (!api.muted && aws && micState === 'ok') ? Math.min(1, 0.1 + selfLevel) * (now < selfSpeakUntil ? 1 : 0.6) : 0;
+      if (ctx && !ctx_was_running && ctx.state === 'running') render();
+      ctx_was_running = !!ctx && ctx.state === 'running';
+    }
+    let ctx_was_running = false;
+    setInterval(tick, 50);
+    Object.defineProperty(api, 'micState', { get: () => micState, set: v => { micState = v; render(); } });
+    Object.assign(api, { unlock, openLink, closeLink, hangup, setMuted, render, chime, suspend: () => ctx && ctx.suspend().then(render),
+      levels: () => ({self: selfLevel, remote: remoteLevel, speaking: performance.now() < remoteSpeakUntil}),
+      ctxState: () => ctx ? ctx.state : 'none', linked: () => !!aws && aws.readyState === 1 });
+    return api;
+  })();
+
+  $('mic-btn').addEventListener('click', () => audio.setMuted(!audio.muted, true));
+  document.addEventListener('keydown', ev => { if (ev.key.toLowerCase() === 'm' && !ev.ctrlKey && !ev.metaKey && !con.classList.contains('hidden') && document.activeElement !== pinInput) { if (!$('mic-btn').disabled) audio.setMuted(!audio.muted, true); } });
+  $('chip-unmute').addEventListener('click', () => audio.unlock(true));
+  $('hp-ok').addEventListener('click', () => { $('hp-hint').classList.add('hidden'); if (session) sessionStorage.setItem('jieyan.hpOk', session); });
 
   // ---------------- drawing (strokes + pointer) ----------------
   function alphaOf(s, now){
@@ -358,7 +658,7 @@
   const dlg = $('end-dialog');
   $('end-btn').addEventListener('click', () => dlg.showModal());
   $('dlg-cancel').addEventListener('click', () => dlg.close());
-  $('dlg-end').addEventListener('click', () => { dlg.close(); ended = true; wantReconnect = false; stopReconnect(); send({t:'end'}); session = null; sessionStorage.removeItem('jieyan.session'); setTimeout(() => showGate('sessionEnded', '会话已结束'), 150); });
+  $('dlg-end').addEventListener('click', () => { dlg.close(); ended = true; wantReconnect = false; stopReconnect(); send({t:'end'}); audio.hangup(); session = null; sessionStorage.removeItem('jieyan.session'); setTimeout(() => showGate('sessionEnded', '会话已结束'), 150); });
 
   // snackbar (E2)
   let snackTimer = null;
@@ -368,20 +668,47 @@
     s.classList.remove('hidden'); clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.add('hidden'), 8000);
   }
 
-  // ---------------- timers: ping, fps, stale, fade ----------------
+  // ---------------- timers: ping, fps / low fps (S11), stale, fade ----------------
   setInterval(() => { send({t:'ping', ts: performance.now()}); }, 2000);
   setInterval(() => {
     const now = performance.now();
-    const dt = now - fpsWindowStart; if (dt >= 1000) { fps = Math.round(frames * 1000 / dt); frames = 0; fpsWindowStart = now; }
-    const stale = phase === 'live' && share && lastFrameAt && now - lastFrameAt > 3000;
-    if (stale && data === 'normal') { data = 'stale'; setState(phase); }
-    $('meta').textContent = (data === 'stale' || phase !== 'live' ? '— ms · 0 fps' : (rtt == null ? '— ms' : rtt + ' ms') + ' · ' + fps + ' fps');
+    const dt = now - fpsWindowStart;
+    if (dt >= 1000) {
+      fps = Math.round(frames * 1000 / dt); frames = 0; fpsWindowStart = now;
+      // S11: below 8 fps for 3 s (but still frames); back at >= 12 fps for 3 s
+      if (phase === 'live' && data === 'normal' && hadFrames) {
+        if (fps > 0 && fps < 8) { lowSec++; okSec = 0; } else if (fps >= 12) { okSec++; lowSec = 0; } else { lowSec = 0; okSec = 0; }
+        const was = lowFps; if (lowSec >= 3) lowFps = true; if (okSec >= 3 || fps === 0) lowFps = false; if (was !== lowFps) setState(phase);
+      }
+    }
+    const stale = phase === 'live' && share && data === 'normal' && lastFrameAt && now - lastFrameAt > 3000;
+    if (stale) { data = 'stale'; setState(phase); }
+    const meta = $('meta'); meta.textContent = lowFps && phase === 'live' && data === 'normal' ? '卡顿 ' + fps + ' fps · 约 ' + (latency == null ? '—' : Math.round(latency / 10) * 10) + ' ms · ' + (link === 'usb' ? 'USB' : 'Wi-Fi') : metaText();
+    meta.classList.toggle('low', lowFps && phase === 'live');
     if (fadeOn || pointer) draw();
   }, 250);
 
-  // harness hooks (preview parity): window.jieyan.*
-  window.jieyan = { state: () => ({phase, share, workerPen, data, fadeOn, strokes: strokes.length, session}), send };
-  showGate('empty', '');
+  // harness hooks (preview parity + QA): window.jieyan.*
+  window.jieyan = {
+    state: () => ({phase, share, workerPen, data, reason, fadeOn, strokes: strokes.length, session, fps, lowFps, latency: latency == null ? null : Math.round(latency), link, demo,
+                   aspect: +(getComputedStyle(document.documentElement).getPropertyValue('--ar')), mic: audio.micState, muted: audio.muted, workerMuted, workerMic,
+                   audioLinked: audio.linked(), audioCtx: audio.ctxState(), levels: audio.levels(), secureContext: window.isSecureContext}),
+    send,
+    /** QA: force the page-only microphone states (E4 insecure, E5 denied) or back to ok. */
+    forceMic: s => { audio.micState = s; send({t:'mic', state: s}); },
+    /** QA: E7 — suspend playback as after a refresh without a gesture. */
+    suspendAudio: () => audio.suspend(),
+    halfDuplex: on => { audio.halfDuplex = !!on; }
+  };
+
+  // ---------------- start ----------------
+  if (session) {
+    // a refresh: reconnect by session (the headset waits 30 s); playback needs a click then (E7)
+    wantReconnect = true; showConsole(); setState('reconnecting'); open(true); audio.unlock(false);
+  } else {
+    showGate('empty', '');
+    maybeSecureHint();
+  }
 })();
 </script>
 </body>

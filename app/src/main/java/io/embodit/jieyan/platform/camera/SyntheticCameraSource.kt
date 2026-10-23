@@ -31,6 +31,9 @@ class SyntheticCameraSource(@Suppress("unused") private val context: Context) : 
     override val targetFps: Int = FPS
     override val name: String = "synthetic"
 
+    /** Frames per second right now; the debug hook lowers it to show S11 (卡顿) on the page. */
+    @Volatile var fps: Int = FPS
+
     private var thread: HandlerThread? = null
     private var handler: Handler? = null
     private var listener: CameraSource.Listener? = null
@@ -53,7 +56,7 @@ class SyntheticCameraSource(@Suppress("unused") private val context: Context) : 
                 bitmap.compress(Bitmap.CompressFormat.JPEG, QUALITY, out)
                 listener?.onFrame(out.toByteArray(), t0)
                 val spent = SystemClock.elapsedRealtime() - t0
-                h.postDelayed(this, (PERIOD_MS - spent).coerceAtLeast(1L))
+                h.postDelayed(this, (1000L / fps.coerceIn(1, 30) - spent).coerceAtLeast(1L))
             }
         }
 
@@ -122,7 +125,7 @@ class SyntheticCameraSource(@Suppress("unused") private val context: Context) : 
         text.color = 0xCCFFFFFF.toInt()
         canvas.drawText(String.format(Locale.US, "SYNTH %02d:%02d.%03d  #%d", ms / 60000, (ms / 1000) % 60, ms % 1000, seq), 14f, H - 16f, text)
         text.color = 0x99FFFFFF.toInt()
-        canvas.drawText("no VST on this build", W - 230f, H - 16f, text)
+        canvas.drawText("emulator demo", W - 180f, H - 16f, text)
     }
 
     companion object {
@@ -130,7 +133,6 @@ class SyntheticCameraSource(@Suppress("unused") private val context: Context) : 
         const val H = 360
         const val FPS = 12
         const val QUALITY = 70
-        private const val PERIOD_MS = 1000L / FPS
 
         /** fx = fy: the glass at 1 m is W/fx = 1.05 m wide and H/fy = 0.59 m high. */
         const val FX = 609.5f

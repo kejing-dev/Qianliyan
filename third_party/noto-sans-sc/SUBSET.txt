@@ -1,6 +1,6 @@
 Noto Sans SC (variable), subset for Spatial Ruler. A Modified Version under the SIL OFL 1.1.
 source: NotoSansSC-VF.ttf  Version 2.04;241114210130;non-release
 axes kept: [('wght', 100.0, 100.0, 900.0)]
-glyphs: 223  characters: 152
-characters: °±·×÷—‘’“”…‰′″№←↑→↓↔↕■□▲△◆○◌●✓　、。〈〉《》「」『』【】一七万三上下不专两个中九二五享会位停像入八六共关再到前十千厘可同后否器四回在地址失头家寸将尺已并开待打授接摄撤播是暂未权束次止步毫浏清玻璃用电画百的直看眼秒笔等米结脑英览试话读败输这连里重销错限除零面！（），：；？｜～
+glyphs: 268  characters: 197
+characters: °±·×÷—‘’“”…‰′″№←↑→↓↔↕①②■□▲△◆○◌●✓　、。〈〉《》「」『』【】一七万三上不专两个中九二五享会停像克入八公六共关再到前十千厘去只可司同后否听和响器四回在地址备失头它家寸将就尺已常并应开待我手打授接摄撤播断旁无是显暂有未机权束样次止正步毫没浏清点热玻璃用电画百的直看眼着秒笔等米线结络网置能脑英行要览设试话语说请读败边运这连通都里重销错限除零静面音风麦！（），：；？｜～
 not in the source font (left to the system fallback): U+270B U+29B8

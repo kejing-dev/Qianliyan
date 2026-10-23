@@ -2,6 +2,8 @@
 
 > 版本 v2 · 2026-10-19。配合 `design-doc.md`（产品设计）和 `ux-flow.html`（UI/UX 流程图）。只讲链路：怎么把 Swan 眼前的画面送到协助者的浏览器、怎么把笔迹送回来、能不能做、代价多大。
 
+> **2026-10-21 更新（v3）**：方案 A 里加了两件事——①相机读回落地细节（`Image.R8G8B8A8_U` 全局张量 + 时间戳去重，默认 960×540）；②语音：独立 WebSocket `/audio`，16 kHz PCM，头显 AEC；浏览器麦克风要求 https 或 localhost，所以有 USB `adb forward` + `localhost` 与局域网 https 自签两条路。「语音不做」一句作废。详见 `v3-vst-voice.md` §1–§2。
+
 ## 0 · 结论先行
 
 | 方案 | 适用 | 可行性 | 关键依据 | 剩余不确定 |

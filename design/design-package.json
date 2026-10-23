@@ -2,14 +2,15 @@
   "appId": "jieyan",
   "name": "千里眼 Qianliyan",
   "packageName": "io.embodit.jieyan",
-  "version": "v2",
+  "version": "v3",
   "source": {
     "designDoc": "C:/Users/Admin/Downloads/jieyan/design/design-doc.md",
     "prototype": "C:/Users/Admin/Downloads/jieyan/design/preview.html",
     "uxFlow": "C:/Users/Admin/Downloads/jieyan/design/ux-flow.html",
     "networking": "C:/Users/Admin/Downloads/jieyan/design/networking.md",
     "reviewVerdict": "pass",
-    "reviewedAt": "2026-10-19"
+    "reviewedAt": "2026-10-19",
+    "v3Changes": "C:/Users/Admin/Downloads/jieyan/design/v3-vst-voice.md"
   },
   "oneLiner": "戴 Swan 的现场人员把眼前的实时画面分享给电脑前的专家；专家直接在视频上画，笔迹同一时刻出现在现场人员眼前一块跟着视野走的透明玻璃上，位置和专家画的地方对得上；现场人员也能在同一块玻璃上画，专家的视频上同步看到。",
   "container": {
@@ -22,12 +23,37 @@
       "Stage 内不用浮层对话框（AlertDialog 不显示内容、SnackbarHost 不可用）：确认在通话条内联，提示用通话条状态文字",
       "不用 Toolbar / TabBar / Subwindow 附件；平时视野里只有一条通话条"
     ],
-    "permissions": ["CAMERA", "INTERNET"],
-    "lifecycle": "退后台 / 关容器 → 停止读回、关 socket、停服务器、清 strokes"
+    "permissions": [
+      "CAMERA",
+      "RECORD_AUDIO",
+      "MODIFY_AUDIO_SETTINGS",
+      "INTERNET",
+      "ACCESS_NETWORK_STATE",
+      "ACCESS_WIFI_STATE"
+    ],
+    "lifecycle": "退后台 / 关容器 / 结束会话 → 取消 SpatialML 循环，关未关的 TensorContent，按 pipeline → 全局张量 → session → instance 释放；停 AudioRecord / AudioTrack，释放 AEC / NS，AudioManager.mode 复原；关 /ws /audio；停 http :8765 / https :8766；清 strokes",
+    "manifestAdds": [
+      "<meta-data android:name=\"pico.spatial.use_experimental_api\" android:value=\"1\"/>"
+    ],
+    "dependencyAdds": [
+      "com.pico.spatial.ml:securemr（BOM 6.1.9）",
+      "com.pico.spatial.ml:readback（BOM 6.1.9）",
+      "Ktor TLS（仅 https spike 成功后）"
+    ]
   },
   "roles": [
-    { "id": "worker", "name": "现场人员", "device": "Swan 头显（Stage Mixed）", "input": "眼手 / 手柄短暂点一下；双手在干活" },
-    { "id": "expert", "name": "专家", "device": "电脑浏览器（LAN 内网页 http://<ip>:8765）", "input": "鼠标；大屏幕" }
+    {
+      "id": "worker",
+      "name": "现场人员",
+      "device": "Swan 头显（Stage Mixed）",
+      "input": "眼手 / 手柄短暂点一下；双手在干活"
+    },
+    {
+      "id": "expert",
+      "name": "专家",
+      "device": "电脑浏览器：USB 时 http://localhost:8765（adb forward）；同一 Wi-Fi 时 <ip>:8765 → E6 → https://<ip>:8766",
+      "input": "鼠标 + 麦克风（耳机最好）；大屏幕"
+    }
   ],
   "panels": [
     {
@@ -36,13 +62,56 @@
       "side": "headset",
       "surface": "Stage 内 Planar 面板，懒跟随，视野下沿",
       "distanceM": 0.9,
-      "sizeDp": { "default": [616, 112], "min": [520, 112], "max": [760, 112] },
-      "physicalM": [0.38, 0.07],
+      "sizeDp": {
+        "default": [
+          680,
+          112
+        ],
+        "min": [
+          600,
+          112
+        ],
+        "max": [
+          760,
+          112
+        ]
+      },
+      "physicalM": [
+        0.42,
+        0.07
+      ],
       "material": "Material.Regular 玻璃（系统默认，根面不另画背景）",
-      "content": "直播红点 + 一行状态文字 + 5 个 56 dp 图标键（✎ 画笔 / ↶ 撤销 / 🗑 清除 / ◉ 共享开关 / ⏻ 结束）",
-      "states": ["live", "pen", "paused", "reconnecting", "confirmEnd", "frameError"],
-      "densityCap": "≤ 5 个键 + 1 行状态",
-      "notes": "内联确认时条体前移 +8 dp（zOffset），文字换成「结束会话并停止共享？」+ 是 / 否"
+      "content": "直播红点 / 三格声波 + 一行状态文字（按优先级）+ 6 个 56 dp 图标键（🎙 静音 / ✎ 画笔 / ↶ 撤销 / 🗑 清除 / ◉ 共享开关 / ⏻ 结束）；🎙 键外 2 dp 音量环",
+      "states": [
+        "live",
+        "pen",
+        "paused",
+        "reconnecting",
+        "confirmEnd",
+        "frameError",
+        "videoStarting",
+        "selfMuted",
+        "expertMuted",
+        "speaking",
+        "voiceReconnecting",
+        "expertListenOnly"
+      ],
+      "densityCap": "≤ 6 个键 + 1 行状态",
+      "notes": "内联确认时条体前移 +8 dp（zOffset），文字换成「结束会话并停止共享？」+ 是 / 否",
+      "statusPriority": [
+        "画面不可用",
+        "重连中",
+        "已暂停画面 · 麦克风开着",
+        "语音断开 · 正在重连",
+        "正在打开摄像头…",
+        "画面 3 秒前",
+        "直播 · 我已静音",
+        "直播 · 专家只能听，不能说",
+        "直播 · 专家已静音",
+        "直播 · 通话中"
+      ],
+      "changed": "v3 C12",
+      "speakingIndicator": "状态文字前固定一格三格声波；不改文字"
     },
     {
       "id": "lobbyCard",
@@ -50,11 +119,34 @@
       "side": "headset",
       "surface": "Stage 内 Planar 面板，正前方",
       "distanceM": 1.2,
-      "sizeDp": { "default": [640, 384], "min": [560, 340], "max": [720, 420] },
-      "physicalM": [0.56, 0.34],
+      "sizeDp": {
+        "default": [
+          640,
+          448
+        ],
+        "min": [
+          560,
+          400
+        ],
+        "max": [
+          720,
+          480
+        ]
+      },
+      "physicalM": [
+        0.56,
+        0.39
+      ],
       "material": "Material.Regular 玻璃",
-      "content": "标题行（等待空心点 + 「借眼 · 等待专家接入」）、地址 http://<ip>:8765（titleLarge）、PIN 4 位（displayLarge 字距 +8）、摄像头权限行、一行说明",
-      "states": ["waiting", "permDenied"]
+      "content": "标题行「○ 千里眼 · 等待专家接入」；「电脑浏览器打开」+ 地址 <ip>:8765（titleLarge，不带 http://，随当前 IP 刷新）｜PIN 4 位；两行权限（摄像头 / 麦克风，被拒 [授权]，不再询问 [去设置]）；分隔线；「连不上（公司 Wi-Fi 常这样）？① 头显和电脑都连同一个手机热点，再打开上面的地址 ② 电脑就在旁边：USB 线连上，电脑运行 adb forward tcp:8765 tcp:8765，再打开 localhost:8765」",
+      "states": [
+        "waiting",
+        "permDenied",
+        "micDenied",
+        "httpsOff(S1u)",
+        "needSettings(S2s)"
+      ],
+      "changed": "v3 C9 C11"
     },
     {
       "id": "visorGlass",
@@ -62,30 +154,76 @@
       "side": "headset",
       "surface": "Stage 内 Planar 面板，头锁定（ECS 系统每帧按 HMD 位姿写 transform）",
       "distanceM": 1.0,
-      "sizeDp": { "default": [1280, 720], "min": "按相机内参", "max": "按相机内参" },
-      "physicalM": [1.05, 0.6],
-      "fovDeg": [55, 33],
+      "sizeDp": {
+        "default": [
+          1280,
+          720
+        ],
+        "min": "按相机内参",
+        "max": "按相机内参"
+      },
+      "physicalM": [
+        1.05,
+        0.6
+      ],
+      "fovDeg": [
+        55,
+        33
+      ],
       "sizingRule": "放在 1.0 m 处时 宽 = W/fx，高 = H/fy（cameraMatrix 内参）；笔迹沿相机同一条视线回到眼前",
       "material": "无材质（纯透明）；画笔开时 2 dp chalkBlue 细框 + 4% 白色薄纱",
       "content": "笔迹层（双方，归一化 0–1 坐标，strokeHalo 外描边）+ 专家指点光标（黄点）+ 画笔开时的芯片「在玻璃上画 · 专家同步看到」",
-      "states": ["invisible", "pen", "fading"]
+      "states": [
+        "invisible",
+        "pen",
+        "fading"
+      ]
     },
     {
       "id": "expertGate",
       "name": "专家台 · PIN 门 Gate",
       "side": "expert",
       "surface": "浏览器页面（石板底 slate）",
-      "sizePx": { "card": [340, "auto"], "viewport": [1440, 900], "viewportMin": [1024, 640] },
+      "sizePx": {
+        "card": [
+          340,
+          "auto"
+        ],
+        "viewport": [
+          1440,
+          900
+        ],
+        "viewportMin": [
+          1024,
+          640
+        ]
+      },
       "content": "标题「连接到现场」、说明、PIN 输入（sui-text-field）、错误行、[连接]（粉笔黄）",
-      "states": ["empty", "pinError", "sessionEnded", "disconnected"]
+      "states": [
+        "empty",
+        "pinError",
+        "sessionEnded",
+        "disconnected",
+        "secureHint(E6)"
+      ]
     },
     {
       "id": "expertViewfinder",
       "name": "专家台 · 取景框 Viewfinder",
       "side": "expert",
       "surface": "浏览器页面 16:9 取景框",
-      "content": "实时画面 + 双方笔迹 + 专家光标；左上角「对方画笔已开」芯片；右上角「画面 3 秒前」芯片；底部提示「直接在画面上画，现场人员立刻看到 · 悬停即指点」",
-      "states": ["live", "paused", "stale", "error", "reconnecting"]
+      "content": "真实 VST 画面（SpatialML 读回，比例 = (W/fx):(H/fy)）+ 双方笔迹 + 专家光标；左上「对方画笔已开」；右上「画面 3 秒前」/「画面有点卡 · 已自动降画质」；模拟器左下「演示画面 · 模拟器没有摄像头」；首帧前环形进度「正在打开头显摄像头…」；不可用时遮罩 ⚠ + 原因 + [重试]",
+      "states": [
+        "videoStarting",
+        "live",
+        "lowFps",
+        "paused",
+        "stale",
+        "error",
+        "reconnecting",
+        "demo"
+      ],
+      "changed": "v3 C1–C5"
     },
     {
       "id": "expertTray",
@@ -94,15 +232,51 @@
       "surface": "取景框下方 56 px 玻璃条",
       "content": "3 个颜色色块（黄 / 白 / 粉，选中显 ✓ + 白环）｜3 档粗细（点大小，选中粉笔黄底）｜撤销｜清除｜8 秒淡出开关",
       "densityCap": "≤ 6 个控件，无文字标签",
-      "states": ["enabled", "disabled(reconnecting)"]
+      "states": [
+        "enabled",
+        "disabled(reconnecting)"
+      ]
     },
     {
       "id": "expertStatusPill",
       "name": "专家台 · 状态签 Status Pill",
       "side": "expert",
       "surface": "顶栏芯片 + 延迟 / fps 文字",
-      "content": "直播 / 已暂停 / 重连中；86 ms · 14 fps（过期时 — ms · 0 fps）",
-      "states": ["live", "paused", "reconnecting", "stale"]
+      "content": "直播 / 已暂停 / 重连中 / 卡顿；「15 fps · 约 120 ms · USB|Wi-Fi」（fps = 去重后的 VST 时间戳计数；延迟 = 显示时刻 − 读回时刻，经 ping 时钟差换算，标「约」）；旁边：三格声波 +「现场在说话」/ 芯片「现场已静音」「现场麦克风未开」",
+      "states": [
+        "live",
+        "paused",
+        "reconnecting",
+        "stale",
+        "lowFps"
+      ],
+      "changed": "v3 C4 C8"
+    },
+    {
+      "id": "expertCallControls",
+      "name": "专家台 · 通话控件 Call Controls",
+      "side": "expert",
+      "surface": "顶栏右侧，[结束] 左边；必要时顶栏下一行 alert 提示条",
+      "content": "[🎙 静音 M]（sui-toggle-button，键外音量环）；提示条：E4「这个地址浏览器不给开麦克风…」/ E5「浏览器拦了麦克风…[重试]」/ 首次接通「戴耳机通话效果最好」（可关）；常驻一行「戴耳机通话效果最好」（每次会话出现，可收起）；E7 取景框左下芯片「🔇 点一下恢复声音」；状态签旁「语音重连中」",
+      "states": [
+        "on",
+        "muted",
+        "disabled(insecure)",
+        "disabled(denied)",
+        "disabled(reconnecting)"
+      ],
+      "changed": "v3 C6 C7 C10"
+    },
+    {
+      "id": "expertSecureHint",
+      "name": "专家台 · 安全地址提示页 Secure Hint (E6)",
+      "side": "expert",
+      "surface": "http://<ip>:8765 局域网访问时返回的单页（石板底，340 px 卡片）",
+      "content": "「为了能通话，要换到安全地址」+ 三步图示（① 点 [继续] ② 浏览器提示「不安全」→ 点「高级」③ 点「继续前往」）+ 一行原因（证书是头显自己签的，只在这台头显和电脑之间用）+ [继续]（粉笔黄）→ https://<ip>:8766 + 小字「先不通话，只看画面」；一行分支「看不到『继续前往』？是公司浏览器策略拦了，请用手机热点 + 其他浏览器，或 USB」",
+      "states": [
+        "shown"
+      ],
+      "changed": "v3 C10"
     }
   ],
   "states": [
@@ -112,26 +286,45 @@
       "side": "both",
       "reach": "启动应用；或任一方结束会话（T10）后回到此态并换新 PIN",
       "previewHook": "初始态；或 通话条 ⏻ → 是；或 专家台 [结束] → 结束",
-      "qaCapture": "头显：配对卡在正前 1.2 m，地址 + 4 位 PIN + 「摄像头 · 已授权」行可读，通话条与玻璃均不显示。专家台：PIN 门卡片。原型断言 #hs[data-state=lobby]、#console[data-state=gate]",
-      "exits": ["T1 专家 PIN 正确 → S3", "T11 权限被拒 → S2"]
+      "qaCapture": "头显：配对卡 640×448 dp 在正前 1.2 m：「电脑浏览器打开」+ 地址 <ip>:8765 + PIN 4 位、两行权限「● 摄像头 · 已授权」「● 麦克风 · 已授权」、分隔线下「连不上（公司 Wi-Fi 常这样）？① 头显和电脑都连同一个手机热点 ② USB 线 + adb forward tcp:8765 tcp:8765 → localhost:8765」；通话条与玻璃不显示。专家台：PIN 门卡片。",
+      "exits": [
+        "T1 专家 PIN 正确 → S3",
+        "T11 权限被拒 → S2"
+      ],
+      "changed": true
     },
     {
       "id": "S2",
-      "name": "配对 · 权限被拒",
+      "name": "配对 · 摄像头被拒",
       "side": "headset",
       "reach": "系统相机权限弹窗选拒绝",
       "previewHook": "配对态按 F10，或 jieyan.setPerm(false)",
-      "qaCapture": "配对卡权限行变 error 色（#FF5F52 底 + 描边）、文案「摄像头权限未授权 · 专家将看不到画面」、出现 [授权] 按钮。原型断言 #lobby.perm-denied",
-      "exits": ["T11 [授权] 成功 → S1"]
+      "qaCapture": "配对卡摄像头行 error 色「摄像头权限未授权 · 专家将看不到画面」+ [授权]；麦克风行照常 另截：摄像头和麦克风都被拒（S2 + S2m）。",
+      "exits": [
+        "T11 [授权] 成功 → S1"
+      ],
+      "changed": true
     },
     {
       "id": "S3",
-      "name": "直播 Live",
+      "name": "直播 · 通话中",
       "side": "both",
       "reach": "专家在 PIN 门输入正确 PIN（T1）；共享恢复（T8）；重连成功（T9）",
       "previewHook": "专家台输入 PIN（配对卡上显示的 4 位）→ [连接] 或 Enter",
-      "qaCapture": "头显：真实世界 + 视野玻璃隐形（无框）、通话条紧凑一行「● 直播 专家已连接」、红点呼吸。专家台：取景框实时画面、状态签「直播」、延迟 86 ms · 14 fps。专家在取景框拖一笔后，黄笔同一时刻出现在玻璃上同一归一化位置；悬停出黄点。原型断言 #hs[data-state=live]、#glass 无 .pen",
-      "exits": ["T3 ✎ 开 → S4", "T8 共享关 → S5", "T9 socket 断 → S6", "T10 结束 → S9", "T12 无帧 → S7 / 读回失败 → S8"]
+      "qaCapture": "头显：真实世界 + 玻璃隐形；通话条 6 键「● 直播 · 通话中」，🎙 键亮。专家台：取景框是真实头显画面（真机）/ 演示画面带 S3d 芯片（模拟器）；状态签「● 直播 15 fps · 约 120 ms · USB」；顶栏 [🎙 静音 M] 可用。笔迹 / 指点同 v2。 另截：状态签 USB 与 Wi-Fi 两版；首次接通专家台顶栏下「戴耳机通话效果最好」一行；双方同时静音（S12 + S13）。",
+      "exits": [
+        "T3 ✎ 开 → S4",
+        "T8 共享关 → S5",
+        "T9 → S6",
+        "T10 → S9",
+        "T12 → S7 / S8",
+        "< 8 fps 3 s → S11",
+        "T13 → S12",
+        "T14 → S13",
+        "/audio 单断 → S6a",
+        "专家开不了麦 → S15"
+      ],
+      "changed": true
     },
     {
       "id": "S4",
@@ -140,16 +333,23 @@
       "reach": "直播中按通话条 ✎（T3）",
       "previewHook": "点通话条 ✎；然后在玻璃上拖动",
       "qaCapture": "头显：玻璃显出 2 dp chalkBlue 细框 + 芯片「在玻璃上画 · 专家同步看到」，通话条 ✎ 选中、状态「画笔开 · 在玻璃上画」、↶ 可用；拖一笔为蓝色。专家台：左上芯片「对方画笔已开」，取景框同步出现蓝笔。原型断言 #glass.pen、#strip-pen[checked]、#console.worker-pen",
-      "exits": ["✎ 关 → S3"]
+      "exits": [
+        "✎ 关 → S3"
+      ]
     },
     {
       "id": "S5",
-      "name": "已暂停共享 Paused",
+      "name": "已暂停画面 · 麦克风开着",
       "side": "both",
       "reach": "直播中现场人员按通话条 ◉ 关共享（T8）",
       "previewHook": "点通话条 ◉（共享开关）",
-      "qaCapture": "头显：红点熄灭、通话条状态「已暂停共享」为 alert 色 #FF8A1F、◉ 图标变 ◌。专家台：取景框遮罩「⏸ 对方已暂停共享」+ 副文案，状态签「已暂停」。原型断言 #hs[data-state=paused]、#vf-paused 可见",
-      "exits": ["◉ 再开 → S3", "T9 → S6", "T10 → S9"]
+      "qaCapture": "头显：红点熄灭，通话条「已暂停画面 · 麦克风开着」alert 色、◉ → ◌；🎙 仍可用。专家台：遮罩「⏸ 对方已暂停画面」+ 副文案「还能继续通话」，状态签「已暂停」；🎙 仍可用。",
+      "exits": [
+        "◉ 再开 → S3",
+        "T9 → S6",
+        "T10 → S9"
+      ],
+      "changed": true
     },
     {
       "id": "S6",
@@ -157,8 +357,12 @@
       "side": "both",
       "reach": "WebSocket 断开（T9）",
       "previewHook": "按 F9（再按一次恢复）；jieyan.timeoutReconnect() 模拟 30 s 超时",
-      "qaCapture": "头显：通话条状态「重连中…」alert 色 + ↻ 图标 + 条底 2 dp 线性进度（#FF8A1F），画笔 / 撤销 / 清除不可用。专家台：遮罩「重连中…」+ 环形进度，粉笔盘整体禁用（LocalDisableAlpha 0.3）。原型断言 #hs[data-state=reconnecting]、#strip-progress 可见",
-      "exits": ["重连成功 → 回前态（S3 / S5）", "30 s 超时 → S1（新 PIN）"]
+      "qaCapture": "同 v2（通话条「重连中…」+ 进度线；专家台遮罩 + 环形进度、粉笔盘禁用）；另：两边 🎙 键禁用，声波不显示；重连成功后通话自动恢复。",
+      "exits": [
+        "重连成功 → 回前态（S3 / S5）",
+        "30 s 超时 → S1（新 PIN）"
+      ],
+      "changed": true
     },
     {
       "id": "S7",
@@ -167,16 +371,22 @@
       "reach": "直播中连续 3 s 无新帧（T12）",
       "previewHook": "直播态按 F8",
       "qaCapture": "专家台：取景框灰化（grayscale + 变暗）、右上芯片「⏱ 画面 3 秒前」alert 底、延迟显示「— ms · 0 fps」；笔迹仍可画。头显：通话条状态「画面 3 秒前」。原型断言 #console.data-fallback、#vf-stale 可见",
-      "exits": ["新帧到达 → S3"]
+      "exits": [
+        "新帧到达 → S3"
+      ]
     },
     {
       "id": "S8",
-      "name": "直播 · 画面不可用（error）",
+      "name": "直播 · 画面不可用（分原因 + 重试）",
       "side": "both",
-      "reach": "读回失败 / 相机不可用（T12）",
-      "previewHook": "直播态按 F10（再按一次恢复）",
-      "qaCapture": "专家台：遮罩「⚠ 画面不可用」+ 副文案「头显未能读取摄像头画面（权限或读回失败）」。头显：红点熄灭，通话条状态「画面不可用 · 读回失败」error 色 #FF5F52。原型断言 #console.data-error、#vf-error 可见",
-      "exits": ["读回恢复 → S3", "T10 → S9"]
+      "reach": "首帧 5 s 超时 / pipeline 连败 5 次 / 无摄像头权限 / 设备无 VST",
+      "previewHook": "调试广播 state=S8 reason=perm|timeout|readback|novst",
+      "qaCapture": "专家台：遮罩 ⚠ + 一行原因（4 种之一，见 v3-vst-voice.md §1.4）+ [重试]（粉笔黄，两次间隔 ≥ 3 s 倒计时）；不显示合成画面；笔迹、语音照常。头显：红点熄灭，通话条「画面不可用」error 色 + 原因短语。每种原因各截一张。 另截：[重试] 倒数中。",
+      "exits": [
+        "T16 [重试] → S10",
+        "T10 → S9"
+      ],
+      "changed": true
     },
     {
       "id": "S9",
@@ -184,8 +394,12 @@
       "side": "headset",
       "reach": "任意直播 / 暂停态按通话条 ⏻（T10，唯一需要显式确认的转换）",
       "previewHook": "点通话条 ⏻",
-      "qaCapture": "通话条隐藏状态与 5 键，改显「结束会话并停止共享？」+ [是]（粉笔黄）+ [否]，条体前移 +8 dp（原型为上移 6 px）。Stage 内不用浮层对话框。原型断言 #strip.confirming",
-      "exits": ["是 → S1（清笔迹、停共享、新 PIN）", "否 → 回前态"]
+      "qaCapture": "同 v2；「是」= 结束会话 + 挂断通话（两边音频停）",
+      "exits": [
+        "是 → S1（清笔迹、停共享、新 PIN）",
+        "否 → 回前态"
+      ],
+      "changed": true
     },
     {
       "id": "E1",
@@ -193,8 +407,11 @@
       "side": "expert",
       "reach": "专家浏览器打开 http://<ip>:8765；会话结束或断线后也回到此页",
       "previewHook": "初始态；输错 PIN 看错误；结束会话后看「会话已结束」",
-      "qaCapture": "石板底上一张 340 px 卡片：「连接到现场」、说明、PIN 输入框、[连接] 粉笔黄。子状态：PIN 错误（输入框 error + 红字「PIN 不对，再看一眼头显上的数字」）、会话已结束、连接已断开。原型断言 #console[data-state=gate]、#gate-pin[error]",
-      "exits": ["PIN 正确 → S3"]
+      "qaCapture": "同 v2；另：USB 打开 localhost:8765 时也是这张卡；PIN 正确后浏览器弹麦克风许可（[连接] 是用户手势）",
+      "exits": [
+        "PIN 正确 → S3"
+      ],
+      "changed": true
     },
     {
       "id": "E2",
@@ -203,7 +420,9 @@
       "reach": "专家按粉笔盘 清除（T6）",
       "previewHook": "直播态按粉笔盘 清除",
       "qaCapture": "底部 sui-snackbar「已清除全部笔迹 · 撤销」，点撤销笔迹回来；头显侧笔迹同步清零。原型断言 #snack 有内容",
-      "exits": ["超时或撤销 → S3"]
+      "exits": [
+        "超时或撤销 → S3"
+      ]
     },
     {
       "id": "E3",
@@ -212,45 +431,462 @@
       "reach": "专家按顶栏 [结束]（T10）",
       "previewHook": "点顶栏 [结束]",
       "qaCapture": "sui-alert-dialog「结束会话？」+ 文案「头显会停止共享并回到配对界面，笔迹全部清除。」+ [取消] / [结束]（error 红）。注意对话框走浏览器 top layer，截图工具可能拍不到，用 DOM :popover-open 断言",
-      "exits": ["结束 → S1 + E1(会话已结束)", "取消 → S3"]
+      "exits": [
+        "结束 → S1 + E1(会话已结束)",
+        "取消 → S3"
+      ]
+    },
+    {
+      "id": "S10",
+      "name": "首帧加载中 Video starting",
+      "side": "both",
+      "reach": "T1 接入 / 共享恢复 / [重试] 后，还没收到第一张真实帧",
+      "previewHook": "调试广播 state=S10（模拟器可强制）",
+      "qaCapture": "专家台：取景框深石板底 + sui-circular-progress +「正在打开头显摄像头…」+ 副文案「通常 1–3 秒」，粉笔盘可用。头显：通话条「正在打开摄像头…」。不出现任何合成画面。",
+      "exits": [
+        "T15 首帧 → S3",
+        "5 s 无帧 → S8(timeout)"
+      ],
+      "changed": true,
+      "deviceOnly": "真实首帧耗时"
+    },
+    {
+      "id": "S11",
+      "name": "画面卡顿 Low fps",
+      "side": "expert",
+      "reach": "实测 < 8 fps 持续 3 s（仍有帧）",
+      "previewHook": "调试广播 state=S11 fps=6",
+      "qaCapture": "专家台：状态签 alert 色「卡顿 6 fps · 约 400 ms」，取景框右上芯片「画面有点卡 · 已自动降画质」，画面不遮挡。头显无变化。",
+      "exits": [
+        "≥ 12 fps 3 s → S3",
+        "0 fps 3 s → S7"
+      ],
+      "changed": true
+    },
+    {
+      "id": "S3d",
+      "name": "演示画面（仅模拟器）",
+      "side": "expert",
+      "reach": "模拟器上任何有画面的态",
+      "previewHook": "在模拟器上正常接入",
+      "qaCapture": "专家台：合成画面左下常显芯片「演示画面 · 模拟器没有摄像头」（alert 描边）；真机上永远不出现。",
+      "exits": [],
+      "changed": true
+    },
+    {
+      "id": "S12",
+      "name": "头显已静音 Worker muted",
+      "side": "both",
+      "reach": "通话中按通话条 🎙（T13）",
+      "previewHook": "点通话条 🎙 / 调试广播 mute=worker",
+      "qaCapture": "头显：🎙 → 🎙̸ alert 底，状态「直播 · 我已静音」。专家台：状态签旁芯片「现场已静音」，不再出现「现场在说话」。",
+      "exits": [
+        "🎙 再按 → S3"
+      ],
+      "changed": true
+    },
+    {
+      "id": "S13",
+      "name": "专家已静音 Expert muted",
+      "side": "both",
+      "reach": "专家按顶栏 🎙 或 M（T14）",
+      "previewHook": "点顶栏 🎙 / 按 M",
+      "qaCapture": "专家台：🎙 选中 🎙̸ alert 底「已静音」。头显：状态「直播 · 专家已静音」labelSecondary。",
+      "exits": [
+        "再按 → S3"
+      ],
+      "changed": true
+    },
+    {
+      "id": "S14",
+      "name": "正在说话 Speaking（瞬时）",
+      "side": "both",
+      "reach": "对方或自己有声音（RMS 超阈值 100 ms，保持 300 ms）",
+      "previewHook": "调试广播 speak=expert|worker（注入电平）",
+      "qaCapture": "头显：专家说话 → 状态文字前固定一格出三格绿声波，文字不变；自己说话 → 🎙 键音量环亮。专家台：现场说话 → 状态签旁三格声波「现场在说话」；自己说话 → 🎙 音量环。",
+      "exits": [
+        "静音 300 ms → S3"
+      ],
+      "changed": true,
+      "deviceOnly": "真实声音电平、回声"
+    },
+    {
+      "id": "S2m",
+      "name": "配对 · 麦克风被拒",
+      "side": "headset",
+      "reach": "系统麦克风权限弹窗选拒绝",
+      "previewHook": "调试广播 perm=mic:false",
+      "qaCapture": "配对卡麦克风行 alert 色「麦克风未授权 · 只能看不能说」+ [授权]；摄像头行照常；配对不受影响。接入后专家台芯片「现场麦克风未开」。",
+      "exits": [
+        "T17 授权 → S1"
+      ],
+      "changed": true
+    },
+    {
+      "id": "E4",
+      "name": "专家台 · 麦克风要安全地址",
+      "side": "expert",
+      "reach": "局域网 http（非 localhost）打开并选「先不通话」，window.isSecureContext == false",
+      "previewHook": "用 http://<ip>:8765 打开",
+      "qaCapture": "顶栏 🎙 禁用（0.3）；顶栏下 alert 条「这个地址浏览器不给开麦克风。要说话：用 USB 打开 localhost:8765，或换 https 地址 →」；能听、能看、能画。",
+      "exits": [
+        "点「换 https 地址」→ E6"
+      ],
+      "changed": true
+    },
+    {
+      "id": "E5",
+      "name": "专家台 · 麦克风被拒",
+      "side": "expert",
+      "reach": "getUserMedia 被拒",
+      "previewHook": "浏览器拒绝麦克风许可",
+      "qaCapture": "🎙 禁用；alert 条「浏览器拦了麦克风：点地址栏左侧 🔒 → 麦克风 → 允许，再点 [重试]」；能听、能看、能画。",
+      "exits": [
+        "T17 [重试] 许可 → S3"
+      ],
+      "changed": true
+    },
+    {
+      "id": "E6",
+      "name": "专家台 · 安全地址提示页",
+      "side": "expert",
+      "reach": "局域网 http://<ip>:8765 首次访问（https 可用时）",
+      "previewHook": "用 http://<ip>:8765 打开",
+      "qaCapture": "石板底 340 px 卡片「为了能通话，要换到安全地址」+ 三步图示 + 原因一行 + [继续] 粉笔黄 + 小字「先不通话，只看画面」。之后浏览器「不安全」页是浏览器自己的，不截。",
+      "exits": [
+        "T18 [继续] → https E1",
+        "「先不通话」→ E1（http，进 S3 后为 E4）"
+      ],
+      "changed": true,
+      "deviceOnly": "自签证书能否在 Android 生成（未确认，spike）"
+    },
+    {
+      "id": "S6a",
+      "name": "语音断开 · 正在重连",
+      "side": "both",
+      "reach": "/audio 断开而 /ws 仍在",
+      "previewHook": "调试广播 drop=audio",
+      "qaCapture": "头显：状态「语音断开 · 正在重连」alert，🎙 禁用，画面与笔迹照常。专家台：🎙 禁用 + 状态签旁芯片「语音重连中」。/audio 每 2 s 自动重试。",
+      "exits": [
+        "/audio 恢复 → S3"
+      ],
+      "changed": true
+    },
+    {
+      "id": "S15",
+      "name": "专家只能听",
+      "side": "headset",
+      "reach": "专家端处于 E4 或 E5（麦克风开不了）",
+      "previewHook": "调试广播 expertMic=off",
+      "qaCapture": "头显：状态「直播 · 专家只能听，不能说」labelSecondary。",
+      "exits": [
+        "专家开麦 → S3"
+      ],
+      "changed": true
+    },
+    {
+      "id": "S1u",
+      "name": "配对 · 只推荐 USB（条件态）",
+      "side": "headset",
+      "reach": "仅当 https 证书 spike 失败、构建里关掉 https",
+      "previewHook": "调试广播 https=off",
+      "qaCapture": "配对卡「电脑浏览器打开」下多一行小字「同一网络打开它能看画面；要通话请用 ②」。",
+      "exits": [],
+      "changed": true
+    },
+    {
+      "id": "S2s",
+      "name": "配对 · 要去系统设置",
+      "side": "headset",
+      "reach": "权限被拒且选了「不再询问」",
+      "previewHook": "调试广播 perm=cam:never|mic:never",
+      "qaCapture": "对应权限行按钮由 [授权] 变 [去设置]；点了打开系统应用权限页。",
+      "exits": [
+        "回来已授权 → S1"
+      ],
+      "changed": true
+    },
+    {
+      "id": "E7",
+      "name": "专家台 · 点一下恢复声音",
+      "side": "expert",
+      "reach": "专家刷新页面后自动重连（无用户手势，播放被浏览器挡住）",
+      "previewHook": "已接入时刷新专家台",
+      "qaCapture": "取景框左下芯片「🔇 点一下恢复声音」；点一下后芯片消失、声音恢复。不是弹窗。",
+      "exits": [
+        "点一下 → S3"
+      ],
+      "changed": true
     }
   ],
   "interactions": [
-    { "id": "T1", "name": "接入", "from": "S1", "to": "S3", "trigger": "专家输入正确 PIN", "confirm": false },
-    { "id": "T2", "name": "专家画", "from": "S3", "to": "S3", "trigger": "专家在取景框按住拖动 → 黄笔同时出现在玻璃上", "confirm": false },
-    { "id": "T3", "name": "现场人员画", "from": "S3", "to": "S4", "trigger": "通话条 ✎ 开后在玻璃上捏合拖动 → 蓝笔同步到专家台", "confirm": false },
-    { "id": "T4", "name": "指点", "from": "S3", "to": "S3", "trigger": "专家鼠标悬停取景框 → 玻璃上同一归一化位置出黄点，700 ms 后熄灭；≤ 20 Hz", "confirm": false },
-    { "id": "T5", "name": "撤销", "from": "S3", "to": "S3", "trigger": "专家 ↶ / Ctrl+Z 撤自己上一笔；现场人员 ↶ 撤自己上一笔", "confirm": false },
-    { "id": "T6", "name": "清除", "from": "S3", "to": "S3", "trigger": "任一方 🗑 清掉全部笔迹；专家台 Snackbar 可撤销", "confirm": false },
-    { "id": "T7", "name": "自动淡出", "from": "S3", "to": "S3", "trigger": "专家台开关开：每笔画完 8 s 后 2 s 内淡出（默认关）", "confirm": false },
-    { "id": "T8", "name": "暂停 / 恢复共享", "from": "S3", "to": "S5", "trigger": "现场人员按 ◉ / ◌；LIVE 点立即熄灭", "confirm": false },
-    { "id": "T9", "name": "断线 / 重连 / 超时", "from": "S3|S5", "to": "S6", "trigger": "socket 断 → 重连中；恢复回前态；30 s 超时回 S1", "confirm": false },
-    { "id": "T10", "name": "结束会话", "from": "*", "to": "S1", "trigger": "通话条 ⏻（内联确认）/ 专家台 [结束]（对话框）", "confirm": true },
-    { "id": "T11", "name": "权限", "from": "S1", "to": "S2", "trigger": "系统权限结果；[授权] 成功回 S1", "confirm": false },
-    { "id": "T12", "name": "画面不可用 / 过期", "from": "S3", "to": "S7|S8", "trigger": "连续 3 s 无帧 → 过期；读回失败 → 不可用", "confirm": false }
+    {
+      "id": "T1",
+      "name": "接入",
+      "from": "S1",
+      "to": "S3",
+      "trigger": "专家输入正确 PIN",
+      "confirm": false
+    },
+    {
+      "id": "T2",
+      "name": "专家画",
+      "from": "S3",
+      "to": "S3",
+      "trigger": "专家在取景框按住拖动 → 黄笔同时出现在玻璃上",
+      "confirm": false
+    },
+    {
+      "id": "T3",
+      "name": "现场人员画",
+      "from": "S3",
+      "to": "S4",
+      "trigger": "通话条 ✎ 开后在玻璃上捏合拖动 → 蓝笔同步到专家台",
+      "confirm": false
+    },
+    {
+      "id": "T4",
+      "name": "指点",
+      "from": "S3",
+      "to": "S3",
+      "trigger": "专家鼠标悬停取景框 → 玻璃上同一归一化位置出黄点，700 ms 后熄灭；≤ 20 Hz",
+      "confirm": false
+    },
+    {
+      "id": "T5",
+      "name": "撤销",
+      "from": "S3",
+      "to": "S3",
+      "trigger": "专家 ↶ / Ctrl+Z 撤自己上一笔；现场人员 ↶ 撤自己上一笔",
+      "confirm": false
+    },
+    {
+      "id": "T6",
+      "name": "清除",
+      "from": "S3",
+      "to": "S3",
+      "trigger": "任一方 🗑 清掉全部笔迹；专家台 Snackbar 可撤销",
+      "confirm": false
+    },
+    {
+      "id": "T7",
+      "name": "自动淡出",
+      "from": "S3",
+      "to": "S3",
+      "trigger": "专家台开关开：每笔画完 8 s 后 2 s 内淡出（默认关）",
+      "confirm": false
+    },
+    {
+      "id": "T8",
+      "name": "暂停 / 恢复共享",
+      "from": "S3",
+      "to": "S5",
+      "trigger": "现场人员按 ◉ / ◌：只停画面（停 submit + 停读回），通话继续；LIVE 点立即熄灭",
+      "confirm": false
+    },
+    {
+      "id": "T9",
+      "name": "断线 / 重连 / 超时",
+      "from": "S3|S5",
+      "to": "S6",
+      "trigger": "socket 断 → 重连中；恢复回前态；30 s 超时回 S1",
+      "confirm": false
+    },
+    {
+      "id": "T10",
+      "name": "结束会话",
+      "from": "*",
+      "to": "S1",
+      "trigger": "通话条 ⏻（内联确认）/ 专家台 [结束]（对话框）；同时挂断通话",
+      "confirm": true
+    },
+    {
+      "id": "T11",
+      "name": "权限",
+      "from": "S1",
+      "to": "S2",
+      "trigger": "系统权限结果；[授权] 成功回 S1",
+      "confirm": false
+    },
+    {
+      "id": "T12",
+      "name": "画面不可用 / 过期",
+      "from": "S3",
+      "to": "S7|S8",
+      "trigger": "连续 3 s 无新帧 → S7；首帧 5 s 超时 / 读回连败 5 次 / 无权限 / 无 VST → S8（分原因）",
+      "confirm": false
+    },
+    {
+      "id": "T13",
+      "name": "头显静音 / 取消",
+      "from": "S3",
+      "to": "S12",
+      "trigger": "通话条 🎙（最左键）",
+      "confirm": false,
+      "verify": "模拟器"
+    },
+    {
+      "id": "T14",
+      "name": "专家静音 / 取消",
+      "from": "S3",
+      "to": "S13",
+      "trigger": "顶栏 🎙 或键盘 M",
+      "confirm": false,
+      "verify": "模拟器"
+    },
+    {
+      "id": "T15",
+      "name": "首帧到达",
+      "from": "S10",
+      "to": "S3",
+      "trigger": "收到第一张时间戳为新的真实帧",
+      "confirm": false,
+      "verify": "真机依赖"
+    },
+    {
+      "id": "T16",
+      "name": "画面重试",
+      "from": "S8",
+      "to": "S10",
+      "trigger": "专家台 [重试] → video.retry → 头显拆掉重建 SpatialML 图",
+      "confirm": false,
+      "verify": "真机依赖（模拟器只验消息与状态）"
+    },
+    {
+      "id": "T17",
+      "name": "麦克风授权",
+      "from": "S2m|E5",
+      "to": "S1|S3",
+      "trigger": "配对卡 [授权] / 浏览器许可后 [重试]",
+      "confirm": false,
+      "verify": "头显弹窗真机依赖；浏览器侧模拟器可验"
+    },
+    {
+      "id": "T18",
+      "name": "换安全地址",
+      "from": "E6",
+      "to": "E1",
+      "trigger": "[继续] → https://<ip>:8766 → 浏览器「仍要继续」",
+      "confirm": false,
+      "verify": "真机依赖（证书）"
+    },
+    {
+      "id": "T19",
+      "name": "自动接通",
+      "from": "S1",
+      "to": "S3",
+      "trigger": "T1 PIN 正确 → 同时打开 /audio；不响铃、不接听",
+      "confirm": false,
+      "verify": "模拟器（信令）+ 真机（声音）"
+    },
+    {
+      "id": "T20",
+      "name": "语音单独重连",
+      "from": "S6a",
+      "to": "S3",
+      "trigger": "/audio 每 2 s 重试成功",
+      "confirm": false,
+      "verify": "模拟器"
+    },
+    {
+      "id": "T21",
+      "name": "恢复声音",
+      "from": "E7",
+      "to": "S3",
+      "trigger": "专家点一下页面任意处 / 芯片",
+      "confirm": false,
+      "verify": "模拟器（浏览器侧）"
+    },
+    {
+      "id": "T22",
+      "name": "接通 / 挂断提示音",
+      "from": "S1|*",
+      "to": "S3|S1",
+      "trigger": "T19 接通 / T10 结束时两端各播 0.3 s 短音",
+      "confirm": false,
+      "verify": "真机（头显声音）"
+    }
   ],
   "palette": {
     "theme": "SpatialUI vibrant + 根面 Material.Regular 玻璃",
     "colorScheme": {
-      "fillPrimary": "inherit", "fillSecondary": "inherit", "fillTertiary": "inherit", "fillLight": "inherit",
-      "labelPrimary": "inherit", "labelPrimaryLight": "inherit", "labelSecondary": "inherit", "labelTertiary": "inherit", "labelQuaternary": "inherit",
-      "lightenHover": "inherit", "lightenPressed": "inherit",
-      "error": "#FF5F52", "alert": "#FF8A1F", "passable": "#7CF2A3", "interaction": "#FFE14D",
+      "fillPrimary": "inherit",
+      "fillSecondary": "inherit",
+      "fillTertiary": "inherit",
+      "fillLight": "inherit",
+      "labelPrimary": "inherit",
+      "labelPrimaryLight": "inherit",
+      "labelSecondary": "inherit",
+      "labelTertiary": "inherit",
+      "labelQuaternary": "inherit",
+      "lightenHover": "inherit",
+      "lightenPressed": "inherit",
+      "error": "#FF5F52",
+      "alert": "#FF8A1F",
+      "passable": "#7CF2A3",
+      "interaction": "#FFE14D",
       "dividerLine": "inherit"
     },
     "brandTokens": {
-      "chalkYellow": "#FFE14D", "chalkWhite": "#F6F2E6", "chalkPink": "#FF8FB1", "chalkBlue": "#8CD5FF",
-      "inkOnChalk": "#1E1A0E", "liveRed": "#FF3B30", "slate": "#20262A", "slateDeep": "#161B1E", "strokeHalo": "rgba(0,0,0,.45)"
+      "chalkYellow": "#FFE14D",
+      "chalkWhite": "#F6F2E6",
+      "chalkPink": "#FF8FB1",
+      "chalkBlue": "#8CD5FF",
+      "inkOnChalk": "#1E1A0E",
+      "liveRed": "#FF3B30",
+      "slate": "#20262A",
+      "slateDeep": "#161B1E",
+      "strokeHalo": "rgba(0,0,0,.45)"
     },
     "semantic": [
-      { "status": "共享中", "color": "liveRed", "cue": "实心圆点 + 呼吸", "copy": "直播 / LIVE" },
-      { "status": "已连接", "color": "passable", "cue": "实心小圆", "copy": "专家已连接" },
-      { "status": "等待", "color": "labelSecondary", "cue": "空心圆", "copy": "等待专家接入" },
-      { "status": "对方画笔开", "color": "chalkBlue", "cue": "✎ 芯片", "copy": "对方画笔已开" },
-      { "status": "重连中", "color": "alert", "cue": "↻ + 线性进度", "copy": "重连中…" },
-      { "status": "已暂停共享", "color": "alert", "cue": "⏸", "copy": "已暂停共享" },
-      { "status": "画面过期", "color": "alert", "cue": "灰化 + 时间", "copy": "画面 3 秒前" },
-      { "status": "错误", "color": "error", "cue": "⚠", "copy": "摄像头权限未授权 / PIN 错误 / 画面不可用" }
+      {
+        "status": "共享中",
+        "color": "liveRed",
+        "cue": "实心圆点 + 呼吸",
+        "copy": "直播 / LIVE"
+      },
+      {
+        "status": "已连接",
+        "color": "passable",
+        "cue": "实心小圆",
+        "copy": "专家已连接"
+      },
+      {
+        "status": "等待",
+        "color": "labelSecondary",
+        "cue": "空心圆",
+        "copy": "等待专家接入"
+      },
+      {
+        "status": "对方画笔开",
+        "color": "chalkBlue",
+        "cue": "✎ 芯片",
+        "copy": "对方画笔已开"
+      },
+      {
+        "status": "重连中",
+        "color": "alert",
+        "cue": "↻ + 线性进度",
+        "copy": "重连中…"
+      },
+      {
+        "status": "已暂停共享",
+        "color": "alert",
+        "cue": "⏸",
+        "copy": "已暂停共享"
+      },
+      {
+        "status": "画面过期",
+        "color": "alert",
+        "cue": "灰化 + 时间",
+        "copy": "画面 3 秒前"
+      },
+      {
+        "status": "错误",
+        "color": "error",
+        "cue": "⚠",
+        "copy": "摄像头权限未授权 / PIN 错误 / 画面不可用"
+      }
     ]
   },
   "typography": {
@@ -280,12 +916,236 @@
     "custom": "视野玻璃笔迹层 / 光标 / 细框 = 自定义 Canvas / svg（领域内容，不是控件）"
   },
   "verification": {
-    "emulatorCanVerify": ["配对", "双向笔迹", "撤销 / 清除 / 淡出", "暂停", "重连", "确认流（合成相机源 + 固定内参）"],
-    "deviceOnly": ["VST 读回帧率与延迟", "画面比例", "内参取用与玻璃对齐误差", "头锁定手感"]
+    "emulatorCanVerify": [
+      "配对（新配对卡）",
+      "双向笔迹",
+      "撤销 / 清除 / 淡出",
+      "暂停（只停画面）",
+      "重连（通话一起断一起回）",
+      "确认流",
+      "新状态外观：S10 / S11 / S8×4 / S3d / S12 / S13 / S14 / S2m（调试广播）",
+      "专家台 E4 / E5 / E6",
+      "静音消息往返、/audio 握手",
+      "USB localhost 页面",
+      "S6a / S15 / S1u / S2s / E7（调试广播）"
+    ],
+    "deviceOnly": [
+      "真实 VST 画面：fps、单帧耗时、比例与内参、延迟常数",
+      "回声与 AEC",
+      "嘴到耳延迟",
+      "RECORD_AUDIO 系统弹窗",
+      "https 自签证书生成与浏览器接受",
+      "画面与玻璃对齐、头锁定手感（v2 原有）"
+    ],
+    "deviceSpikeFirst": "研发站先在 Swan（PB324XJGL2090081G）跑：读回 60 s（960×540 与 512×512）记 fps / 耗时 / camK，截一帧核对颜色与 alpha；AEC isAvailable；setCommunicationDevice 扬声器；https 证书生成 + Chrome / Edge 接受后 getUserMedia（≤ 1 h 定去留）；然后写全量",
+    "deviceSerial": "PB324XJGL2090081G"
   },
   "reviewNotes": [
     "2026-10-19 设计包 v2 评审 pass（design-doc.md §6）；v1「一画即冻结」被用户否决，v2 画面不冻结",
     "2026-10-20 设计站：从 design-doc.md 整理出本 JSON（states S1–S9 + E1–E3），内容未改动设计决定",
-    "2026-10-20 用户改名：借眼 Jieyan → 千里眼 Qianliyan（研发站只改显示名；appId / 包名 io.embodit.jieyan 不变；design-doc.md 等设计稿保留旧名作历史记录）"
-  ]
+    "2026-10-20 用户改名：借眼 Jieyan → 千里眼 Qianliyan（研发站只改显示名；appId / 包名 io.embodit.jieyan 不变；design-doc.md 等设计稿保留旧名作历史记录）",
+    "2026-10-21 回设计站 #1（v3，changedOnly）：用户要真实画面（SpatialML Readback）+ 双向语音；变化处 C1–C13 见 design/v3-vst-voice.md；容器 STAGE_MIXED / 骨架 D 不变",
+    "2026-10-21 v3 评审第 1 轮（子 agent，12 条，全部采纳或部分采纳）：USB 降为兜底 + 加手机热点；/audio 单断 S6a；对称态 S15；暂停提示麦克风开着 + 接通提示音；setCommunicationDevice；回声兜底只开专家侧半双工；按文档 RGB → convertColor → RGBA；比例探测挪到配对阶段；E7 恢复声音；声波不改文字；公司浏览器策略分支；补 S1u / S2s 与 QA 组合截图。未采纳：「戴耳机」改为检测耳机——浏览器测不准，改为每次会话常驻一行可收起"
+  ],
+  "appVersionTarget": "v0.2.0",
+  "videoPipeline": {
+    "mode": "SpatialML Readback Mode（containerWidth/Height/Depth = 0 或 DISABLED）",
+    "graph": "rectifiedVSTAccess(rightImageResult=rgb[本地 Image.R8G8B8_U], leftImageResult=null, timestampResult=stamp, cameraMatrixResult=camK) → convertColor(RGB_TO_RGBA, rgb, frame)；图建一次，~15 Hz submit",
+    "tensors": {
+      "rgb": "本地 Image.R8G8B8_U (H,W)",
+      "frame": "GlobalTensor Image.R8G8B8A8_U (H,W)；读不回则换 R8G8B8A8_U_DYNAMIC（官方样例路径）",
+      "stamp": "GlobalTensor TimeStampInitInfo()",
+      "camK": "GlobalTensor FLOAT32 (3,3)，读一次并缓存"
+    },
+    "readback": "frame.readbackContentSuspend().use { bitmap.copyPixelsFromBuffer } → JPEG q70 → 现有 conflated 帧通道；stamp 不变 = 非新帧，跳过",
+    "resolution": "默认 960×540；|fx−fy|/fx > 3% 换 1024×768，再不行 512×512；取景框比例 (W/fx):(H/fy)；比例探测在配对阶段（相机授权后）做一次并缓存；S10 5 s 超时按每次建图计",
+    "degrade": "< 12 fps 3 s → q55；< 10 fps 再 3 s → 下次会话 640×360",
+    "neverSynthOnDevice": true,
+    "unconfirmed": [
+      "rectifiedVSTAccess 图像格式：API 参考允许 R8G8B8_U / R8G8B8A8_U，算子卡只写 RGB——按两者都认的 RGB 取帧再 convertColor",
+      "convertColor 填的 alpha 值（编码前 setHasAlpha(false) 兜底，spike 截帧核对）",
+      "非 dynamic RGBA 全局张量能否 readbackContent（不行换 _DYNAMIC）",
+      "读回与 submit 完成的同步（stamp 去重兜底）",
+      "VST 时间戳格式（延迟只算读回之后，标「约」）"
+    ],
+    "zooCheck": "2026-10-21 pico-cli spatialml pipeline search camera/vst/readback/image = 0；仅 face-mediapipe（人脸检测）可复用取帧一步，不套包，代码建 1 算子图",
+    "sources": [
+      "spatial-ml_workflows_access-vst-camera-images.md",
+      "spatial-ml_reference_operators_rectifiedvstaccess.md",
+      "spatial-ml_concepts_secure-mode-and-readback-mode.md",
+      "spatial-ml_workflows_read-data-back-to-the-app.md",
+      "spatial-ml_reference_core-api.md",
+      "spatial-ml_workflows_async-pipeline-patterns.md",
+      "spatial-ml_getting-started_prerequisites.md",
+      "spatial-sdk_spatialml_spatialml-privacy-statement.md",
+      "api-reference/com.pico.spatial.ml.securemr.md",
+      "api-reference/com.pico.spatial.ml.readback.md",
+      "pico-dev-knowledge query_graph（readback / rectifiedVSTAccess）",
+      "spatial-ml_reference_tensor-types-and-enums.md（RGB_TO_RGBA before binding or readback）"
+    ]
+  },
+  "voice": {
+    "headset": "AudioRecord(VOICE_COMMUNICATION, 16 kHz, mono, PCM16) + AcousticEchoCanceler / NoiseSuppressor（isAvailable 才开）；AudioTrack(USAGE_VOICE_COMMUNICATION)；通话期间 AudioManager.mode = MODE_IN_COMMUNICATION；AudioManager.setCommunicationDevice() 明确选扬声器（Swan 默认走向未确认）",
+    "browser": "getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})，[连接] 手势内申请并 resume AudioContext；AudioWorklet 切 20 ms / 16 kHz Int16",
+    "transport": "独立 WebSocket /audio（避免被画面大帧队头阻塞），包 [u16 seq][u8 flags][PCM16×320]，flags bit0 = 静音；抖动缓冲 60 ms，上限 200 ms",
+    "codec": "PCM 16 kHz（256 kbps）；Opus 留给跨网",
+    "target": "嘴到耳 ≤ 300 ms（LAN / USB）",
+    "echoFallback": "兜底只开专家一侧：现场声音在播时专家麦克风暂停发送（半双工，松口 300 ms 恢复）；专家台每次会话常驻一行「戴耳机通话效果最好」",
+    "secureContext": {
+      "B_https_main": "同一网络（Wi-Fi 隔离时两边连同一手机热点）：<ip>:8765 → E6 → https://<ip>:8766 自签证书（持久化，IP 变才重签）；公司浏览器策略禁「继续前往」时 E6 给分支",
+      "A_usb_fallback": "adb forward tcp:8765 tcp:8765 → http://localhost:8765（专家电脑在旁边 / 调试；已验证 200；头显需已授权该电脑 USB 调试）",
+      "Bprime_http": "只看 + 画，🎙 禁用（E4），头显显示 S15"
+    },
+    "unconfirmed": [
+      "PICO 上 AcousticEchoCanceler.isAvailable()",
+      "浏览器 AEC 对 AudioContext 播放是否生效",
+      "Android 上 Ktor 自签证书生成 / 加载（spike ≤ 1 h，不成只走 USB）",
+      "Swan 通话模式音频走听筒还是扬声器",
+      "Chrome / Edge 接受自签证书后 getUserMedia 是否可用"
+    ],
+    "notUsed": "SpatialML captureMicrophone / outputSounds（无通话 AEC）",
+    "chime": "接通 / 挂断两端各一声 0.3 s 短音（不是铃声）",
+    "partialDisconnect": "/audio 单断 → S6a，每 2 s 重试；/ws 断按 S6",
+    "pageRefresh": "刷新后自动重连但播放需手势 → E7 芯片「点一下恢复声音」"
+  },
+  "changes": [
+    {
+      "id": "C1",
+      "what": "真实画面：VstReadbackCameraSource 用 SpatialML Readback Mode 实现，真机永不回落 SYNTH",
+      "states": [
+        "S3"
+      ],
+      "deviceOnly": true
+    },
+    {
+      "id": "C2",
+      "what": "首帧加载态",
+      "states": [
+        "S10"
+      ],
+      "deviceOnly": true
+    },
+    {
+      "id": "C3",
+      "what": "画面不可用分原因 + [重试]",
+      "states": [
+        "S8"
+      ],
+      "deviceOnly": true
+    },
+    {
+      "id": "C4",
+      "what": "帧率 / 延迟指示 + 卡顿态",
+      "states": [
+        "S3",
+        "S11",
+        "S7"
+      ],
+      "deviceOnly": true
+    },
+    {
+      "id": "C5",
+      "what": "模拟器演示画面芯片",
+      "states": [
+        "S3d"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C6",
+      "what": "双向语音：自动接通，/audio PCM，AEC",
+      "states": [
+        "S3"
+      ],
+      "deviceOnly": true
+    },
+    {
+      "id": "C7",
+      "what": "两边静音键",
+      "states": [
+        "S12",
+        "S13"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C8",
+      "what": "说话指示 + 音量环",
+      "states": [
+        "S14"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C9",
+      "what": "头显麦克风权限",
+      "states": [
+        "S1",
+        "S2m"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C10",
+      "what": "浏览器麦克风：同一网络 https 自签（主路，隔离时连手机热点）/ USB localhost（兜底）+ 继续提示 + 刷新后恢复声音",
+      "states": [
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ],
+      "deviceOnly": "部分"
+    },
+    {
+      "id": "C11",
+      "what": "配对卡改版（单地址 + 两行权限 + ① 手机热点 ② USB 说明，640×448）",
+      "states": [
+        "S1",
+        "S1u",
+        "S2s"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C12",
+      "what": "通话条 6 键（🎙 最左），680 dp",
+      "states": [
+        "S3"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C13",
+      "what": "暂停只停画面（提示麦克风开着）；重连 / 结束带上通话；只断语音单独一态；接通 / 挂断提示音",
+      "states": [
+        "S5",
+        "S6",
+        "S6a",
+        "S9"
+      ],
+      "deviceOnly": false
+    },
+    {
+      "id": "C14",
+      "what": "能不能说话两边对称：专家开不了麦时头显显示「专家只能听，不能说」",
+      "states": [
+        "S15"
+      ],
+      "deviceOnly": false
+    }
+  ],
+  "tags": {
+    "contentType": "应用",
+    "contentTags": [
+      "生产力",
+      "远程协助"
+    ],
+    "featureTags": [
+      "MR 透视",
+      "SpatialML 读回",
+      "语音通话",
+      "局域网",
+      "跨品类"
+    ]
+  }
 }

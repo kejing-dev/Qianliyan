@@ -110,4 +110,8 @@ object JieyanType {
     /** Chips and timestamps: `labelMedium` 12 / 16 SemiBold. */
     val label: TextStyle
         @Composable get() = PicoTheme.typography.labelMedium.copy(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold)
+
+    /** The adb command on the lobby card: monospace `labelMedium` 12 / 16. */
+    val mono: TextStyle
+        @Composable get() = PicoTheme.typography.labelMedium.copy(fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
 }

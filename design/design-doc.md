@@ -1,6 +1,9 @@
 # Spatial App Design Doc — 借眼 Jieyan（远程协助）
 
 > 状态：设计包 **v2**（2026-10-19）。v1 的"一画即冻结 + 粉笔板"被用户否决（**画面不冻结**），v2 改为实时视频 + 视野玻璃。范围：设计文档 + 一个可点的 Web 原型（`preview.html`，`web_design_validation_only`）。不含运行时代码、设备证据。
+
+> **2026-10-21 · 设计包 v3（应用 v0.2.0）**：新增「真实画面（SpatialML 读回）+ 双向语音」，变化处全部写在 `v3-vst-voice.md`（C1–C13）；本文其余部分仍有效，与 v3 冲突处以 v3 为准（如：v1 不做音频 → v3 做；通话条 5 键 → 6 键；配对卡 640×384 → 640×448）。
+
 > 术语：Full Space / Stage Mixed（透视）、Planar 面板。实现枚举（`STAGE_MIXED` 等）由下游 `spatial-design-to-app` 决定。UI 全部用 PICO SpatialUI（`PicoTheme` + 内置组件），字体 Noto Sans。
 
 **配套文件** — `ux-flow.html`：UI/UX 流程图（启动 → 配对 → 看见 → 指点 → 异常与结束，头显/电脑/手机三种画面）；`networking.md`：网络与视频链路方案与可行性；`preview.html`：可点原型。

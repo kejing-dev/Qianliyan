@@ -6,25 +6,45 @@
     <!-- 配对卡 -->
     <string name="lobby_title">千里眼 · 等待专家接入</string>
     <string name="lobby_address_unknown">未连接 Wi-Fi</string>
+    <string name="lobby_open_in_browser">电脑浏览器打开</string>
+    <string name="lobby_pin_label">PIN</string>
     <string name="lobby_perm_granted">摄像头 · 已授权</string>
     <string name="lobby_perm_denied">摄像头权限未授权 · 专家将看不到画面</string>
+    <string name="lobby_mic_granted">麦克风 · 已授权</string>
+    <string name="lobby_mic_denied">麦克风未授权 · 只能看不能说</string>
     <string name="lobby_grant">授权</string>
-    <string name="lobby_hint">同一 Wi-Fi 下，用电脑浏览器打开上面的地址，输入这 4 位 PIN</string>
+    <string name="lobby_settings">去设置</string>
+    <string name="lobby_usb_only">同一网络打开它能看画面；要通话请用 ②</string>
+    <string name="lobby_help_title">连不上（公司 Wi-Fi 常这样）？</string>
+    <string name="lobby_help_hotspot">① 头显和电脑都连同一个手机热点，再打开上面的地址</string>
+    <string name="lobby_help_usb">② 电脑就在旁边：USB 线连上，电脑运行</string>
+    <string name="lobby_help_usb_cmd">adb forward tcp:8765 tcp:8765</string>
+    <string name="lobby_help_usb_then">再打开 localhost:8765</string>
     <string name="lobby_locked">连错 5 次 · 60 秒后再试</string>
 
     <!-- 通话条状态 -->
-    <string name="strip_live">直播</string>
-    <string name="strip_connected">专家已连接</string>
+    <string name="strip_live">直播 · 通话中</string>
     <string name="strip_pen_on">画笔开 · 在玻璃上画</string>
-    <string name="strip_paused">已暂停共享</string>
+    <string name="strip_paused">已暂停画面 · 麦克风开着</string>
     <string name="strip_reconnecting">重连中…</string>
+    <string name="strip_voice_reconnecting">语音断开 · 正在重连</string>
+    <string name="strip_starting">正在打开摄像头…</string>
     <string name="strip_stale">画面 3 秒前</string>
-    <string name="strip_error">画面不可用 · 读回失败</string>
+    <string name="strip_self_muted">直播 · 我已静音</string>
+    <string name="strip_expert_listen_only">直播 · 专家只能听，不能说</string>
+    <string name="strip_expert_muted">直播 · 专家已静音</string>
+    <string name="strip_error">画面不可用</string>
+    <string name="strip_error_perm">没有摄像头权限</string>
+    <string name="strip_error_timeout">摄像头没响应</string>
+    <string name="strip_error_readback">读回失败</string>
+    <string name="strip_error_novst">设备无摄像头</string>
     <string name="strip_confirm_end">结束会话并停止共享？</string>
     <string name="strip_yes">是</string>
     <string name="strip_no">否</string>
 
     <!-- 通话条键（无障碍描述） -->
+    <string name="key_mic_on">麦克风 · 开着</string>
+    <string name="key_mic_off">麦克风 · 已静音</string>
     <string name="key_pen">画笔</string>
     <string name="key_undo">撤销</string>
     <string name="key_clear">清除</string>

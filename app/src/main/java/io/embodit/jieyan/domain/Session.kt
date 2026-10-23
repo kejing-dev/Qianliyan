@@ -66,14 +66,47 @@ enum class Phase {
     RECONNECTING,
 }
 
-/** Whether the picture reaching the expert is current, stale (no frame for 3 s) or unavailable (readback failed). */
+/**
+ * Whether the picture reaching the expert is current, starting (S10: no first frame yet), stale (no
+ * frame for 3 s) or unavailable (S8, with a [VideoError] reason).
+ */
 enum class DataState(val wire: String) {
     NORMAL("normal"),
+    STARTING("starting"),
     STALE("stale"),
     ERROR("error");
 
     companion object {
         fun of(wire: String?): DataState = entries.firstOrNull { it.wire == wire } ?: NORMAL
+    }
+}
+
+/** Why the picture is unavailable (S8, design v3 §1.4). */
+enum class VideoError(val wire: String) {
+    PERMISSION("perm"),
+    TIMEOUT("timeout"),
+    READBACK("readback"),
+    NO_VST("novst");
+
+    companion object {
+        fun of(wire: String?): VideoError = entries.firstOrNull { it.wire == wire } ?: READBACK
+    }
+}
+
+/** What the expert's browser can do with its microphone (design v3 C14: S15 on the headset). */
+enum class ExpertMic(val wire: String) {
+    UNKNOWN("unknown"),
+    OK("ok"),
+    /** http on a LAN address: the browser gives no microphone (E4). */
+    INSECURE("insecure"),
+    /** The browser or the user refused it (E5). */
+    DENIED("denied");
+
+    val canTalk: Boolean
+        get() = this == OK || this == UNKNOWN
+
+    companion object {
+        fun of(wire: String?): ExpertMic = entries.firstOrNull { it.wire == wire } ?: UNKNOWN
     }
 }
 

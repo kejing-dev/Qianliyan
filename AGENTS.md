@@ -5,7 +5,8 @@ the package `io.embodit.jieyan`, the factory appId `jieyan`, the log tag `Jieyan
 `io.embodit.jieyan.DEBUG` and the class names keep the old name on purpose.
 
 See-what-I-see remote assistance for PICO OS 6 (Swan). Kotlin, PICO Spatial SDK 6.1.9, one Mixed Stage
-(passthrough), package `io.embodit.jieyan`, v0.1.3. The worker wearing the headset shares the live camera
+(passthrough), package `io.embodit.jieyan`, v0.2.0 (design v3: real VST picture via SpatialML Readback Mode +
+two-way voice, `design/v3-vst-voice.md`, changes C1–C14). The worker wearing the headset shares the live camera
 picture with an expert in a browser on the same LAN; the expert draws on the video and the chalk lines appear
 at the same place on a head-locked transparent "visor glass" 1.0 m in front of the worker's eyes; the worker
 can draw back in blue, and the expert sees it on the video.
@@ -39,6 +40,85 @@ Not built / device only: VST readback (frame rate, latency, aspect, intrinsics -
 feel on a real head, CAMERA runtime permission on a headset (the lobby's 授权 key starts `PermissionActivity`;
 on the emulator the synthetic source needs no permission and the row reads 已授权).
 
+## v0.2.0 (design v3, 2026-10-22) — real picture + two-way voice
+
+- **Picture (C1–C5)**: `platform/camera/VstReadbackCameraSource` — SpatialML Readback Mode, one graph per start:
+  `rectifiedVSTAccess(right = local R8G8B8_U, timestamp = global, camK = global FLOAT32 3x3)` ->
+  `convertColor(RGB_TO_RGBA, -> global R8G8B8A8_U)`; session `InitInfo(W, H, 0, 0, 0, DISABLED)`; submit every
+  66 ms, read the stamp back (unchanged = not a new frame, skipped), then the RGBA frame (`copyPixelsFromBuffer`
+  into an opaque ARGB_8888 bitmap) -> JPEG q70 (q55 after 3 s < 12 fps) -> the conflated frame channel. camK is read
+  once -> `CameraIntrinsics` -> glass size and the page's viewfinder aspect (W/fx : H/fy, no fixed 16:9).
+  The readback runs only while needed: S10 from the expert's arrival / resume / [重试] until the first frame
+  (5 s per graph build, then S8 timeout), off while paused, reconnecting, after the end. The **emulator** keeps
+  `SyntheticCameraSource` (page chip 「演示画面 · 模拟器没有摄像头」, S3d); a headset never shows it.
+- **Size probe** (design §1.3): in the lobby, 3 s after launch, camera granted: 960x540 -> camK says
+  |fx-fy|/fx = 0.25 (the native image is 4:3) -> 1024x768 -> square (fx = fy = 651.2) -> remembered in prefs `vst`
+  (with the intrinsics). `vstreset` forgets it. Degraded (< 10 fps for 3 s at q55) -> the next session uses 640x480.
+- **Voice (C6–C14)**: `platform/audio/VoiceEngine` — `AudioRecord(VOICE_COMMUNICATION)` 16 kHz mono + AEC + NS
+  (both `isAvailable` = true on the Swan), `AudioTrack(USAGE_VOICE_COMMUNICATION)` on the same audio session,
+  `MODE_IN_COMMUNICATION` + `setCommunicationDevice(built-in speaker)` (Swan reports `speaker`), 60 ms jitter
+  buffer, ≤ 200 ms. Second WebSocket `/audio?session=…`, packets `[u16 seq BE][u8 flags][PCM16 LE x 320]`, flags
+  bit0 = muted (then empty packets every 200 ms), bit1 = expert held (half duplex). The engine runs from the
+  arrival to the end, not while reconnecting. 0.3 s connect / hang-up tones on both sides. Page: `getUserMedia`
+  inside the [连接] click, AudioWorklet capture/playback (LAN http has no AudioWorklet: listen-only fallback with
+  scheduled buffers), echo fallback = the expert's mic is held while the worker speaks (+300 ms).
+- **https (C10)**: `platform/net/TlsGateway` — `SSLServerSocket` :8766 with a self-signed cert (Ktor
+  `buildKeyStore`, RSA 2048 / SHA256withRSA, SAN = LAN IPs + 127.0.0.1, stored as BKS in files/tls.bks, re-signed
+  when a new IP is not covered), piping to the server's loopback-only plain connector :8767 (Ktor CIO has no TLS
+  connector). `/info` -> `{link, https, httpsPort, secure}`; the page shows E6 on LAN http when https is up.
+  Link label: loopback on :8765 = `USB` (adb forward), everything else `Wi-Fi`.
+- **Lobby card (C11)** 640 x 448 dp: address without `http://` + PIN on one row, camera + microphone rows
+  ([授权], [去设置] after "don't ask again": S2 / S2m / S2s), the hotspot / USB help with the adb command.
+  Both permissions are asked at launch (`PermissionActivity`), re-checked every 1.5 s (coming back from settings).
+- **Call strip (C12)** 680 x 112 dp, 6 keys (🎙 first, with the level ring), a fixed wave slot (expert speaking),
+  one status line by the v3 priority list.
+
+### Device facts (Swan B3110 PB324XJGL2090081G, 2026-10-22)
+
+- VST readback 1024x768 @ 15 Hz: page 14–15 fps (60 s average 14.6), readback 4 ms + JPEG 9–10 ms per frame,
+  15–80 KB per frame (scene dependent), first frame 0.3–0.4 s after the expert connects; the page's latency
+  (readback -> displayed, via the ping/pong clock offset) ≈ 20 ms over USB. The VST exposure -> readback part is
+  not in it (stamp format undocumented), so the "约" stays; the stopwatch calibration of design §1.5 is still open.
+- **The camera works only while the headset is awake.** Asleep (display off, `dumpsys power`
+  `mWakefulness=Asleep`, typical when it lies on the desk) Secure MR logs `[CAMERA ERROR]: camera >>> configure =>
+  -1` / `camera is opening, but not ready`, sensorproviderservice `camera status check … is not available`.
+  Bench tests: `adb shell input keyevent KEYCODE_WAKEUP` every 15 s. The source retries the build once and opens a
+  new session twice when no frame comes within 2.5 s; on a worn headset this does not happen.
+- adb broadcasts are not delivered while the display is off. **Debug builds also take every debug command over
+  HTTP**: `curl "localhost:8765/debug?cmd=state&s=S8:timeout"` (after `adb forward tcp:8765 tcp:8765`); 404 in release.
+- The in-app browser pane blocks the microphone (the page shows E5). Voice was verified with Playwright + Edge
+  (`--use-fake-device-for-media-stream`): page -> headset beep received; headset `tone` -> page level 0.87 and
+  「现场在说话」; mute both ways; https on a non-localhost name with the self-signed cert accepted -> secure
+  context, mic and wss work, label Wi-Fi. Real cross-LAN https (Wi-Fi isolation here), acoustic echo with a person
+  wearing the headset and mouth-to-ear delay are not verified.
+- `pico-cli capture screenshot` on the Swan fails while the display is off ("Failed to take screenshot").
+
+### v3 debug commands (also over HTTP `/debug?cmd=&s=&a=`)
+
+| cmd | arguments | effect |
+|---|---|---|
+| `state` | S10 S11[:fps] S3d S12 S13 S14[:worker/expert] S15[:insecure/denied] S6a S1u S2m[:both] S2s[:cam/mic/both] S8:perm/timeout/readback/novst | the v3 states (S2 also takes `:both`) |
+| `mute` | s="worker on/off" or "expert on/off" | either side's mute |
+| `speak` | s="worker/expert [ms]" | injected speaking level (S14) |
+| `expertmic` / `drop` / `audio` | ok/insecure/denied · audio · on/off | S15 · close only /audio (S6a) · mark linked |
+| `https` / `never` / `mic` | on/off · cam/mic/both/off · denied/granted | S1u · S2s · microphone row |
+| `fps` / `tone` / `vst` / `vstreset` | N · ms · a=W,H · – | emulator picture rate (S11) · headset 440 Hz test tone · restart VST at W x H · forget the probe |
+
+### v3 QA screenshot list (add to the list below)
+
+| state | how to reach | what must be in the shot |
+|---|---|---|
+| S10 | `state S10` | strip 「正在打开摄像头…」; page dark viewfinder + ring 「正在打开头显摄像头…」「通常 1–3 秒」 |
+| S11 | `state S11` (emulator picture at 5 fps) | page only: pill 「卡顿」, meta 「卡顿 5 fps · 约 … ms」, chip 「画面有点卡 · 已自动降画质」 after 3 s |
+| S8 ×4 | `state S8:perm` / `:timeout` / `:readback` / `:novst` | strip 「画面不可用 · <短语>」 red; page reason + [重试] (none for novst); [重试] -> S10 1.2 s -> back to S8 with the 3 s countdown (emulator) |
+| S3d | any live state on the emulator | page chip 「演示画面 · 模拟器没有摄像头」 bottom left |
+| S12 / S13 | `state S12` / `state S13` (or M on the page) | 🎙 alert + 「直播 · 我已静音」 / 「直播 · 专家已静音」; page chip 「现场已静音」 / 🎙 「已静音」 orange |
+| S14 | `state S14:expert` (or `:worker`) | strip: three green bars before the text (text unchanged) / mic ring; page 「现场在说话」 needs real voice (`tone` on a device) |
+| S15 | `state S15` | strip 「直播 · 专家只能听，不能说」 |
+| S6a | `state S6a` | strip 「语音断开 · 正在重连」 alert, 🎙 disabled; page chip 「语音重连中」, back by itself in ≤ 2 s |
+| S1u / S2m / S2s | `state S1u` / `state S2m` / `state S2s` | lobby extra line / mic row alert + [授权] / both rows [去设置] |
+| E4 / E5 / E7 / E6 | page hooks `jieyan.forceMic('insecure' / 'denied')`, `jieyan.suspendAudio()`; E6 = open `http://<non-localhost>:8765` | alert bar / alert bar + [重试] / chip 「🔇 点一下恢复声音」 / E6 card |
+
 ## Structure and why
 
 ```
@@ -48,8 +128,10 @@ app/src/main/java/io/embodit/jieyan/
                                CameraIntrinsics, Pin), Protocol (wire JSON + binary frame)   -- no SDK types
   platform/                    SpatialApplication, LaunchActivity, PermissionActivity (+ CameraPermission), JieyanLog
   platform/tracking            HeadTracker (HMDTrackingProvider, read once per frame)
-  platform/camera              CameraSource (interface + factory), SyntheticCameraSource, VstReadbackCameraSource (stub)
-  platform/net                 AssistServer (Ktor CIO: page + WebSocket, conflated frame channel), NetworkAddress
+  platform/camera              CameraSource (interface + factory + VstSize probe cache), SyntheticCameraSource (emulator), VstReadbackCameraSource
+  platform/audio               VoiceEngine (AudioRecord + AEC/NS, AudioTrack, jitter buffer, levels, tones)
+  platform/net                 AssistServer (Ktor CIO: page, /info, /debug, /ws, /audio), TlsGateway (:8766 -> :8767), NetworkAddress
+  platform/DebugBridge         HTTP twin of the debug receiver (debug builds install it from debug/DebugInit)
   ui/theme                     JieyanTheme (PicoTheme + 4 semantic roles), JieyanColors (the only colour literals),
                                JieyanTypography (Noto Sans + Noto Sans SC subset, type roles of the design)
   ui/session                   SessionViewModel (the state machine S1–S9, server + camera owner), SessionUiState /
@@ -183,16 +265,16 @@ picture normal, no confirmation), so the states can be shot in any order.
 
 ## Log (tag `Jieyan`)
 
-`STATE <S?> phase= why= pin= expert= pen= data= strokes=` · `SERVER started|stopped|address=` · `WS welcome|closed|dropped|pin wrong|hello rejected` ·
-`CAM source=|synthetic start|stop|error` · `STROKE expert|worker|debug|undo|clear|unclear` · `PERM camera granted=` · `STAGE root|enter|disposed` ·
+`STATE <S?> phase= why= pin= expert= pen= data= strokes=` · `SERVER started|stopped|address=` · `WS welcome … link=|closed|dropped|pin wrong|hello rejected` · `AUDIO open|closed|dropped in= out=` · `VOICE start|on|stop aec= ns= device=` · `TLS started|certificate signed san=` ·
+`CAM source=|probe|vst start|vst graph ready|vst stats fps= readMs= encMs= kb=|first frame|intrinsics|error` · `STROKE expert|worker|debug|undo|clear|unclear` · `PERM camera granted=` · `STAGE root|enter|disposed` ·
 `SCENE attached|detached` · `PANEL bound id=` · `FOLLOW lobby|strip park|slide` · `FRAME n= head= fwd=` (every 5 s) · `CMD recv` · `DUMP {json}` ·
 `POSE hmd …` · `PANEL id=… pos=… scale=…` · `CTRL panel= name= cx= cy= w= h=` · debug builds: `PTR panel= ev= x= y=`, `RIG slot id= shown|parked|stowed`, `GLASS redraw panel= tick= draws=`.
 
 ## Next steps / open points
 
-- Device station: implement `VstReadbackCameraSource` (SpatialML Readback Mode, see the class comment), read
-  `cameraMatrixResult` into `CameraIntrinsics`, measure submit -> readback at 640 x 360 (target >= 12 fps,
-  < 40 ms per frame), check the glass against a known object at 1 m, and the CAMERA permission flow.
-- Audio is out of scope (parallel phone call). Multi-expert, WebRTC (scheme B/C/D) are v2.
+- Done in v0.2.0: VST readback (15 fps), voice, https. Still open on a worn headset: the stopwatch latency
+  constant, the glass against a known object at 1 m (camK 1024x768 -> 1.572 x 1.179 m at 1 m), the CAMERA /
+  RECORD_AUDIO system dialogs, acoustic echo, mouth-to-ear delay, cross-LAN https (hotspot) with Chrome and Edge.
+- Multi-expert, WebRTC / cloud relay (scheme B/C/D), Opus are later.
 - Other AI sessions own `emulator-5554` (Codex), `emulator-5556` (Spatial Ruler) and `emulator-5558` (ThreeViews).
-  Only ever use `emulator-5560` (AVD `PICO_6_1_Verified`).
+  Only ever use `emulator-5560` (AVD `PICO_6_1_Verified`) and, for the device checks, the Swan `PB324XJGL2090081G`.

@@ -12,8 +12,8 @@ android {
         applicationId = "io.embodit.jieyan"
         minSdk = 35
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.1.3"
+        versionCode = 5
+        versionName = "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk { abiFilters.add("arm64-v8a") }
@@ -64,6 +64,9 @@ dependencies {
     implementation(libs.spatial.ui.design)
     implementation(libs.spatial.ui.sense)
     implementation(libs.spatial.ui.tracking)
+    // SpatialML Readback Mode: the real VST picture (design v3 C1, spatial-ml_getting-started_prerequisites.md)
+    implementation(libs.spatial.ml.securemr)
+    implementation(libs.spatial.ml.readback)
     implementation(libs.androidx.ui.tooling)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.appcompat)
@@ -74,6 +77,8 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.websockets)
+    // self-signed certificate for the LAN https listener (:8766, design v3 C10; pure-Kotlin DER, no BouncyCastle)
+    implementation(libs.ktor.network.tls.certificates)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.org.json)

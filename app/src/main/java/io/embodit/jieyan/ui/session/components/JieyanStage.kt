@@ -26,7 +26,7 @@ import io.embodit.jieyan.ui.session.scene.PanelIds
  * control, except while the worker's pen is on.
  */
 @Composable
-internal fun JieyanStage(state: SessionUiState, scene: JieyanScene, onEvent: (SessionEvent) -> Unit) {
+internal fun JieyanStage(state: SessionUiState, levels: kotlinx.coroutines.flow.StateFlow<io.embodit.jieyan.ui.session.SessionViewModel.Levels>, scene: JieyanScene, onEvent: (SessionEvent) -> Unit) {
     val bindTick = scene.bindTick.intValue
     SpatialView(
         modifier = Modifier.fillMaxSize(),
@@ -38,7 +38,7 @@ internal fun JieyanStage(state: SessionUiState, scene: JieyanScene, onEvent: (Se
             }
             AttachmentPanel(PanelIds.STRIP) {
                 PoolPanel(PanelIds.STRIP, scene, pressed = { scene.onStripPointer() }) { inView ->
-                    CallStrip(state = if (inView) state else null, onEvent = onEvent)
+                    CallStrip(state = if (inView) state else null, levels = levels, onEvent = onEvent)
                 }
             }
             AttachmentPanel(PanelIds.GLASS) {

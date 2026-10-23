@@ -1,0 +1,686 @@
+<title>千里眼 样稿 v3</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap">
+<style>
+/* 布局：单栏规格书（石板底），每个面板 / 状态一屏；组件态 1 dp = 1 px 原尺寸，全景按 16:9 缩放 */
+:root{
+  --bg:#14181B; --bg-2:#1B2024; --panel:#20262A; --panel-2:#262D32;
+  --ink:#F2F4F5; --ink-2:rgba(242,244,245,.74); --ink-3:rgba(242,244,245,.52); --line:rgba(255,255,255,.12);
+  --chalk-yellow:#FFE14D; --chalk-white:#F6F2E6; --chalk-pink:#FF8FB1; --chalk-blue:#8CD5FF; --ink-on-chalk:#1E1A0E;
+  --live-red:#FF3B30; --slate:#20262A; --slate-deep:#161B1E; --halo:rgba(0,0,0,.45);
+  --error:#FF5F52; --alert:#FF8A1F; --passable:#7CF2A3; --interaction:#FFE14D;
+  --glass:rgba(255,255,255,.34); --fill-light:rgba(255,255,255,.15); --fill-tertiary:rgba(255,255,255,.08);
+  --label-primary:rgba(255,255,255,.94); --label-secondary:rgba(255,255,255,.80); --label-tertiary:rgba(255,255,255,.65); --label-quaternary:rgba(255,255,255,.40);
+  --font:"Noto Sans","Noto Sans SC","Noto Sans CJK SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 80px}
+a{color:var(--chalk-blue)}
+h1{font-size:30px;line-height:1.2;margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.25;margin:0 0 4px;text-wrap:balance}
+h3{font-size:16px;margin:28px 0 10px;color:var(--ink);text-wrap:balance}
+p{margin:0 0 10px;max-width:72ch}
+.muted{color:var(--ink-2)}
+.tiny{font-size:12px;color:var(--ink-3)}
+code{font-family:var(--mono);font-size:.92em;background:var(--fill-tertiary);padding:1px 6px;border-radius:6px}
+.hdr{padding:28px 0 18px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk-yellow);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:var(--fill-light);font-size:12px;font-weight:600;color:var(--label-primary);white-space:nowrap}
+.chip.y{background:var(--chalk-yellow);color:var(--ink-on-chalk)}
+.chip.b{background:var(--chalk-blue);color:var(--ink-on-chalk)}
+.chip.a{background:var(--alert);color:var(--ink-on-chalk)}
+.chip.e{background:var(--error);color:#fff}
+.chip.r{background:rgba(255,59,48,.85);color:#fff}
+.chip.g{background:rgba(255,255,255,.35);color:var(--ink-on-chalk)}
+.howto{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.howto .big{font-size:15px;font-weight:600}
+.howto .big b{color:var(--chalk-yellow)}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(20,24,27,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px))) 0 calc(-1 * max(16px,env(safe-area-inset-right,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+nav.toc ul{list-style:none;margin:0;padding:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav.toc li a{display:block;padding:10px 10px;font-size:13px;font-weight:600;color:var(--ink-2);text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent}
+nav.toc li a:hover{color:var(--ink);border-color:var(--chalk-yellow)}
+section{padding:44px 0 8px;border-bottom:1px solid var(--line)}
+.sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.sec-head .num{font-family:var(--mono);font-size:13px;color:var(--chalk-yellow);font-weight:600}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.04em;color:var(--ink-3);font-weight:600;background:var(--panel)}
+tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono);color:var(--chalk-yellow);white-space:nowrap}
+td.nm{font-weight:600;white-space:nowrap}
+td.side{white-space:nowrap;color:var(--ink-2)}
+.go{appearance:none;border:0;background:var(--fill-light);color:var(--label-primary);font:600 12px/1 var(--font);padding:8px 12px;border-radius:14px;cursor:pointer;white-space:nowrap}
+.go:hover{background:rgba(255,255,255,.26)}
+.go:focus-visible{outline:2px solid var(--chalk-yellow);outline-offset:2px}
+.go.y{background:var(--chalk-yellow);color:var(--ink-on-chalk)}
+.dims{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:12px;color:var(--ink-2);margin:6px 0 12px}
+.dims b{color:var(--ink);font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.card h4{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h4 .st{font-family:var(--mono);font-size:11px;color:var(--chalk-yellow)}
+.note{font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.note b{color:var(--ink)}
+
+/* ───── 全景（16:9） ───── */
+.scene{position:relative;aspect-ratio:16/9;max-width:100%;border-radius:16px;overflow:hidden;background:#000;user-select:none}
+.scene svg.room{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scene .vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 58%,rgba(0,0,0,.5) 100%)}
+.gl{position:absolute;left:10%;top:10%;width:80%;height:80%;border-radius:12px}
+.gl.ghost{outline:1.5px dashed rgba(255,255,255,.55);outline-offset:-1px}
+.gl.pen{box-shadow:inset 0 0 0 2px rgba(140,213,255,.85),0 0 0 1px rgba(0,0,0,.25);background:rgba(255,255,255,.04)}
+.gl.fade .strokes{opacity:.45}
+.strokes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.strokes polyline,.strokes ellipse{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hud{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--chalk-yellow);box-shadow:0 0 0 2px #fff,0 0 14px rgba(255,225,77,.85)}
+.ovl{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;font-family:var(--mono)}
+.ovl line,.ovl path{stroke:#fff;stroke-width:2;fill:none}
+.ovl text{fill:#fff;font-size:24px;font-weight:600;paint-order:stroke;stroke:rgba(0,0,0,.55);stroke-width:6px}
+.tag{position:absolute;font-size:11px;font-weight:600;line-height:1;padding:6px 9px;border-radius:10px;background:rgba(0,0,0,.62);color:#fff;border:1px dashed rgba(255,255,255,.6);white-space:nowrap;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
+.glass{background:var(--glass);backdrop-filter:blur(50px) saturate(1.18);-webkit-backdrop-filter:blur(50px) saturate(1.18);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 18px 54px rgba(0,0,0,.24)}
+.sstrip{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);width:54%;height:52px;border-radius:26px;display:flex;align-items:center;gap:2px;padding:0 8px 0 14px;z-index:8}
+.sstrip .st{display:flex;align-items:center;gap:8px;flex:1;min-width:0;font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--label-primary)}
+.sstrip .k{width:36px;height:36px}
+.sstrip .k svg{width:20px;height:20px}
+.slobby{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46%;min-width:300px;padding:18px 22px 16px;border-radius:28px;display:flex;flex-direction:column;gap:6px;z-index:7;color:var(--label-primary)}
+.slobby .t{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.slobby .lb{font-size:11px;color:var(--label-secondary);font-weight:600}
+.slobby .url{font-size:17px;line-height:22px;font-weight:600}
+.slobby .pin{font-size:32px;line-height:42px;font-weight:700;letter-spacing:6px}
+.slobby .perm{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:14px;background:rgba(0,0,0,.18);font-size:11.5px;font-weight:600;min-height:36px}
+.slobby .hint{font-size:11px;color:var(--label-secondary)}
+.ico{width:22px;height:22px;display:block;fill:currentColor}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--live-red);flex:none}
+.dot.live{animation:breathe 1.6s ease-in-out infinite}
+.dot.off{opacity:.25;animation:none}
+.dot.hollow{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+.k{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:var(--label-primary);flex:none;position:relative}
+.k.on{background:var(--interaction);color:var(--ink-on-chalk)}
+.k.dis{opacity:.3}
+.k svg{fill:currentColor}
+
+/* ───── 组件态 1:1（1 dp = 1 px） ───── */
+.mock{position:relative;width:100%;min-width:660px;height:170px;border-radius:14px;overflow:hidden;background:#000}
+.mock svg.room{position:absolute;inset:0;width:100%;height:100%}
+.scroller{overflow-x:auto;border-radius:14px}
+.strip{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:616px;height:112px;border-radius:56px;display:flex;align-items:center;gap:0;padding:0 20px 0 28px;color:var(--label-primary)}
+.strip .st{display:flex;align-items:center;gap:12px;flex:1;min-width:0;font-size:14px;line-height:18px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strip .st.alert{color:var(--alert)}
+.strip .st.error{color:var(--error)}
+.strip .keys{display:flex;gap:0;align-items:center}
+.strip .k{width:56px;height:56px}
+.strip .k svg{width:24px;height:24px}
+.strip .prog{position:absolute;left:40px;right:40px;bottom:6px;height:2px;border-radius:1px;background:rgba(255,255,255,.2);overflow:hidden}
+.strip .prog i{position:absolute;top:0;bottom:0;width:40%;background:var(--alert);animation:slide 1.4s linear infinite}
+@keyframes slide{0%{left:-40%}100%{left:100%}}
+.strip.confirming{transform:translate(-50%,calc(-50% - 8px))}
+.strip .confirm{display:flex;align-items:center;gap:12px;flex:1;font-size:14px;font-weight:500}
+.strip .confirm span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 18px;border-radius:18px;background:var(--fill-light);color:var(--label-primary);font-size:13px;font-weight:600;white-space:nowrap}
+.btn.y{background:var(--interaction);color:var(--ink-on-chalk)}
+.btn.e{background:var(--error);color:#fff}
+.btn.lg{height:44px;padding:0 24px;border-radius:22px;font-size:14px}
+.lobby{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:640px;height:384px;border-radius:32px;padding:26px 30px 22px;display:flex;flex-direction:column;gap:8px;color:var(--label-primary)}
+.lobby .t{display:flex;align-items:center;gap:10px;font-size:16px;line-height:20px;font-weight:600}
+.lobby .lb{font-size:12px;line-height:16px;font-weight:600;color:var(--label-secondary)}
+.lobby .url{font-size:20px;line-height:26px;font-weight:600;letter-spacing:.01em}
+.lobby .pin{font-size:40px;line-height:54px;font-weight:700;letter-spacing:8px}
+.lobby .perm{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-radius:16px;background:rgba(0,0,0,.18);font-size:13px;font-weight:600;min-height:44px}
+.lobby .perm .pm{flex:1}
+.lobby .perm.denied{background:rgba(255,95,82,.22);box-shadow:inset 0 0 0 1px rgba(255,95,82,.65)}
+.lobby .hint{font-size:12px;line-height:18px;color:var(--label-secondary)}
+.mock.tall{height:440px}
+
+/* ───── 专家台 ───── */
+.console{position:relative;background:var(--slate);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:16/10;min-height:420px;max-width:100%;color:#fff}
+.chrome{height:34px;flex:none;display:flex;align-items:center;gap:10px;padding:0 12px;background:#2a3135;font-size:12px;color:rgba(255,255,255,.6)}
+.chrome .d i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#5a6368;margin-right:4px}
+.chrome .addr{flex:1;background:#1c2225;border-radius:8px;padding:4px 10px;color:rgba(255,255,255,.8);font-family:var(--mono)}
+.topbar{height:52px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px}
+.topbar .brand{font-weight:700;font-size:15px;white-space:nowrap}
+.topbar .lat{font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
+.topbar .sp{flex:1}
+.cmain{flex:1;display:flex;padding:0 16px 76px;min-height:0}
+.vf{position:relative;width:100%;aspect-ratio:16/9;background:var(--slate-deep);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);max-width:100%}
+.vf svg.room{position:absolute;inset:0;width:100%;height:100%}
+.vf.stale svg.room{filter:grayscale(.9) brightness(.65)}
+.vf .hint{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:11px;color:rgba(255,255,255,.85);background:rgba(0,0,0,.42);padding:5px 10px;border-radius:12px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;text-overflow:ellipsis}
+.vf .tl{position:absolute;left:10px;top:10px}
+.vf .tr{position:absolute;right:10px;top:10px}
+.vf .over{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:rgba(22,27,30,.74);backdrop-filter:blur(6px);font-size:15px;font-weight:600;text-align:center;padding:12px}
+.vf .over .big{font-size:26px}
+.vf .over .sub{font-size:11.5px;font-weight:500;opacity:.75}
+.ring{width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tray{position:relative;height:56px;border-radius:28px;display:inline-flex;align-items:center;gap:8px;padding:0 14px 0 12px;white-space:nowrap;color:var(--label-primary);max-width:100%}
+.tray .sep{width:1px;height:24px;background:rgba(255,255,255,.28)}
+.tray .sw{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--ink-on-chalk);margin:0 2px}
+.tray .sw.sel{box-shadow:0 0 0 2px #fff,0 0 0 4px rgba(0,0,0,.35)}
+.tray .sw svg{width:20px;height:20px;fill:currentColor;opacity:0}
+.tray .sw.sel svg{opacity:1}
+.tray .wd{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--label-primary);margin:0 1px}
+.tray .wd.sel{background:var(--interaction);color:var(--ink-on-chalk)}
+.tray .wd svg{width:22px;height:22px;fill:currentColor}
+.tray .k{width:40px;height:40px}
+.tray .k svg{width:22px;height:22px}
+.tray .fade{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+.sw-toggle{width:40px;height:22px;border-radius:11px;background:rgba(255,255,255,.3);position:relative}
+.sw-toggle i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff}
+.sw-toggle.on{background:var(--chalk-yellow)}
+.sw-toggle.on i{left:21px;background:var(--ink-on-chalk)}
+.tray.dis>*:not(.lab){opacity:.3}
+.ctray{position:absolute;left:50%;bottom:12px;transform:translateX(-50%) scale(.82);transform-origin:bottom center;z-index:3}
+.gate{width:340px;max-width:100%;padding:28px 28px 24px;display:flex;flex-direction:column;gap:12px;background:rgba(255,255,255,.06);border-radius:24px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);color:#fff}
+.gate .title{font-size:24px;line-height:30px;font-weight:700}
+.gate .sub{font-size:13px;color:rgba(255,255,255,.65);line-height:1.5}
+.gate .field{height:44px;border-radius:12px;background:var(--fill-light);display:flex;align-items:center;padding:0 14px;color:var(--label-quaternary);font-size:15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.gate .field.err{box-shadow:inset 0 0 0 2px var(--error);color:var(--label-primary)}
+.gate .error{font-size:12px;color:var(--error);min-height:18px;line-height:18px}
+.gate .error.neutral{color:rgba(255,255,255,.65)}
+.gate .actions{display:flex;justify-content:flex-end}
+.slateboard{background:var(--slate);border-radius:18px;padding:22px;display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.dialog{width:360px;max-width:100%;padding:24px 24px 18px;border-radius:24px;background:#2a3135;box-shadow:0 24px 60px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1);color:#fff;display:flex;flex-direction:column;gap:10px}
+.dialog .t{font-size:18px;font-weight:700}
+.dialog .m{font-size:13px;color:rgba(255,255,255,.7);line-height:1.5}
+.dialog .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.snack{display:inline-flex;align-items:center;gap:18px;height:48px;padding:0 10px 0 18px;border-radius:14px;background:#EDEFF0;color:#1E1A0E;font-size:13.5px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.snack b{color:#8a5a00;font-weight:700;padding:6px 10px;border-radius:10px}
+
+/* ───── 色板 / 字体 ───── */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.swatch{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg-2)}
+.swatch .c{height:46px;background-image:linear-gradient(45deg,#2a3135 25%,transparent 25%,transparent 75%,#2a3135 75%),linear-gradient(45deg,#2a3135 25%,transparent 25%,transparent 75%,#2a3135 75%);background-size:12px 12px;background-position:0 0,6px 6px;background-color:#1c2225;position:relative}
+.swatch .c i{position:absolute;inset:0}
+.swatch .n{padding:8px 10px 2px;font-size:12px;font-weight:600;font-family:var(--mono)}
+.swatch .v{padding:0 10px 2px;font-size:11px;color:var(--ink-3);font-family:var(--mono)}
+.swatch .u{padding:0 10px 8px;font-size:11.5px;color:var(--ink-2)}
+.type .row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.type .row .r{font-family:var(--mono);font-size:12px;color:var(--chalk-yellow)}
+.type .row .s{color:var(--label-primary)}
+.type .row .meta{font-size:12px;color:var(--ink-3);display:block}
+@media (max-width:560px){.type .row{grid-template-columns:1fr}}
+
+/* ───── 原型 ───── */
+.proto-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 12px}
+.proto-bar .lbl{font-size:12px;color:var(--ink-3);margin-right:4px}
+iframe#proto{width:100%;height:780px;border:1px solid var(--line);border-radius:16px;background:#0f1214;display:block}
+#proto-status{font-size:12px;color:var(--ink-3);margin-top:8px;min-height:18px}
+.kbd{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 6px;border-radius:6px;background:var(--fill-tertiary);border:1px solid var(--line)}
+.foot{padding:40px 0 20px;color:var(--ink-3);font-size:12.5px}
+
+/* ───── v3 增量：变化高亮、6 键通话条、配对卡 v3、通话控件 ───── */
+.backbar{margin:16px 0 0;padding:12px 16px;border-radius:12px;background:var(--chalk-yellow);color:var(--ink-on-chalk);font-weight:700;font-size:14px;line-height:1.5}
+.cbadge{display:inline-flex;align-items:center;height:22px;padding:0 8px;margin-left:8px;border-radius:6px;background:var(--chalk-yellow);color:var(--ink-on-chalk);font:700 11px/1 var(--mono);vertical-align:middle}
+.st2{display:inline-flex;align-items:center;height:22px;padding:0 8px;margin-left:6px;border-radius:6px;background:var(--fill-light);color:var(--label-primary);font:600 11px/1 var(--mono);vertical-align:middle}
+.chg{outline:2px dashed var(--chalk-yellow);outline-offset:4px;border-radius:16px}
+.card.chg{outline-offset:-2px}
+.chg-inline{border-left:3px solid var(--chalk-yellow);padding-left:10px}
+.ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--ink-2)}
+.ul b{color:var(--ink)}
+.devcard{box-shadow:inset 0 0 0 1px rgba(255,138,31,.55);background:rgba(255,138,31,.07)}
+.devcard h4{color:var(--alert)}
+table.narrow{min-width:640px}
+td.dev{color:var(--alert);font-weight:600;white-space:nowrap}
+tr.new td{background:rgba(255,225,77,.06)}
+tr.chgrow td{background:rgba(140,213,255,.05)}
+.nb{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:5px;background:var(--chalk-yellow);color:var(--ink-on-chalk);font-size:10.5px;font-weight:700}
+.nb.c{background:var(--chalk-blue)}
+details.old{margin-top:14px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+details.old summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--ink-2)}
+details.old summary:focus-visible{outline:2px solid var(--chalk-yellow);outline-offset:2px}
+
+/* 流程 */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;padding:16px;background:var(--bg-2);border-radius:16px}
+.fstep{flex:1 1 140px;min-width:0;display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:12px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.fstep b{font-size:13.5px}
+.fstep span{font-size:12px;color:var(--ink-2);line-height:1.5}
+.fstep.y{box-shadow:inset 0 0 0 2px var(--chalk-yellow)}
+.farr{align-self:center;color:var(--ink-3);font-size:18px}
+@media (max-width:640px){.farr{transform:rotate(90deg);flex-basis:100%;text-align:center}}
+
+/* 专家台 v3 */
+.topbar .lat.hl{color:var(--label-primary);font-weight:600}
+.talk{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--passable);white-space:nowrap}
+.bars{display:inline-flex;align-items:flex-end;gap:2px;height:14px;font-style:normal;flex:none}
+.bars b{display:block;width:3px;border-radius:2px;background:var(--passable);animation:eq .9s ease-in-out infinite}
+.bars b:nth-child(1){height:6px}
+.bars b:nth-child(2){height:13px;animation-delay:.15s}
+.bars b:nth-child(3){height:9px;animation-delay:.3s}
+@keyframes eq{0%,100%{transform:scaleY(.55)}50%{transform:scaleY(1)}}
+.micbtn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px 0 10px;border-radius:16px;background:var(--fill-light);color:var(--label-primary);font-size:12px;font-weight:600;white-space:nowrap}
+.micbtn svg{width:18px;height:18px;fill:currentColor}
+.micbtn .kbd{font-size:10px;padding:1px 5px}
+.micbtn.lvl{box-shadow:0 0 0 2px rgba(124,242,163,.75)}
+.micbtn.muted{background:var(--alert);color:var(--ink-on-chalk)}
+.micbtn.dis{opacity:.3}
+.micbtn.hl{box-shadow:0 0 0 2px rgba(124,242,163,.75)}
+.vf .over.solid{background:var(--slate-deep);backdrop-filter:none}
+.vf .bl{position:absolute;left:10px;bottom:10px}
+.chip.demo{background:rgba(0,0,0,.6);color:#fff;box-shadow:inset 0 0 0 1.5px var(--alert)}
+.chip.w{background:rgba(255,255,255,.9);color:var(--ink-on-chalk)}
+.btn.retry{gap:6px;margin-top:6px}
+.btn.retry svg{width:16px;height:16px;fill:currentColor}
+.btn.dis{opacity:.45}
+.btn.sm{height:28px;padding:0 12px;font-size:12px;margin-left:auto}
+.bars-demo{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--slate);border-radius:16px}
+.tb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:44px;padding:6px 12px;border-radius:12px;background:#2a3135;color:#fff}
+.tb .lat{font-size:12px;color:rgba(255,255,255,.75);white-space:nowrap}
+.tb .sp{flex:1}
+.tb .cap{flex-basis:100%;font-size:11.5px;color:rgba(255,255,255,.55)}
+.tipbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;border-radius:10px;font-size:12.5px;font-weight:500;line-height:1.5;margin-top:8px}
+.tipbar.info{background:rgba(255,255,255,.1);color:#fff}
+.tipbar.warn{background:rgba(255,138,31,.18);color:#FFD2AE;box-shadow:inset 0 0 0 1px rgba(255,138,31,.6)}
+.tipbar .x{margin-left:auto;font-weight:700;color:var(--chalk-yellow)}
+.inl{width:14px;height:14px;fill:currentColor;vertical-align:-2px}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:1.5}
+.gate .steps{color:rgba(255,255,255,.85)}
+.path h4 .ico{width:20px;height:20px;fill:var(--chalk-yellow)}
+
+/* 通话条 6 键 */
+.mock.m6{min-width:720px}
+.strip.s6{width:680px;padding:0 18px 0 28px}
+.k.mic{color:var(--label-primary)}
+.k.on.mic{background:var(--fill-light);color:var(--label-primary)}
+.k.lvl{box-shadow:0 0 0 2px rgba(124,242,163,.85)}
+.k.muted{background:var(--alert);color:var(--ink-on-chalk)}
+.strip .st .bars{margin-right:2px}
+
+/* 配对卡 v3 */
+.mock.lob{height:520px}
+.lobby.v3{height:448px;gap:6px;padding:24px 30px 20px}
+.lobby .row2{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.lobby .pinbox{display:flex;flex-direction:column;align-items:flex-end}
+.lobby .pinbox .pin{line-height:48px}
+.perms{display:flex;gap:10px;flex-wrap:wrap}
+.pr{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 12px;border-radius:14px;background:rgba(0,0,0,.18);font-size:12px;font-weight:600;color:var(--label-primary)}
+.pr i{width:8px;height:8px;border-radius:50%;background:var(--passable);flex:none}
+.pr .ico{width:18px;height:18px}
+.pr.err{background:rgba(255,95,82,.22);box-shadow:inset 0 0 0 1px rgba(255,95,82,.65)}
+.pr.warn{background:rgba(255,138,31,.2);box-shadow:inset 0 0 0 1px rgba(255,138,31,.65)}
+.lobby .rule{height:1px;background:rgba(255,255,255,.22);margin:4px 0}
+.lobby .hint2{font-size:13px;line-height:20px;color:var(--label-primary)}
+.cmd{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,.12);white-space:nowrap}
+.lobsnip{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:20px;color:var(--label-primary);background-color:#3a4247}
+.lobsnip .pr{width:100%}
+.lobsnip .lb{font-size:12px;font-weight:600;color:var(--label-secondary)}
+.lobsnip .url.sm{font-size:18px;font-weight:600}
+.lobsnip .hint{font-size:12px;color:var(--label-secondary)}
+
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></symbol>
+    <symbol id="i-clear" viewBox="0 0 24 24"><path d="M16.24 3.56l4.95 4.94c.78.79.78 2.05 0 2.84L12 20.53a4.008 4.008 0 0 1-5.66 0L2.81 17c-.78-.79-.78-2.05 0-2.84l10.6-10.6c.79-.78 2.05-.78 2.83 0zM4.22 15.58l3.54 3.53c.78.79 2.04.79 2.83 0l3.53-3.53-4.95-4.95-4.95 4.95z"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></symbol>
+    <symbol id="i-camoff" viewBox="0 0 24 24"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42A6.92 6.92 0 0 1 19 12c0 3.87-3.13 7-7 7A6.995 6.995 0 0 1 7.58 6.58L6.17 5.17A8.932 8.932 0 0 0 3 12a9 9 0 0 0 18 0c0-2.74-1.23-5.18-3.17-6.83z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+    <symbol id="i-d1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/></symbol>
+    <symbol id="i-d2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/></symbol>
+    <symbol id="i-d3" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></symbol>
+    <symbol id="i-micoff" viewBox="0 0 24 24"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.17c0-.06.02-.11.02-.17V5c0-1.66-1.34-3-3-3S9 3.34 9 5v.18l5.98 5.99zM4.27 3L3 4.27l6.01 6.01V11c0 1.66 1.33 3 2.99 3 .22 0 .44-.03.65-.08l1.66 1.66c-.71.33-1.5.52-2.31.52-2.76 0-5.3-2.1-5.3-5.1H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c.91-.13 1.77-.45 2.54-.9L19.73 21 21 19.73 4.27 3z"/></symbol>
+    <symbol id="i-retry" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+    <symbol id="i-usb" viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07c.7-.37 1.2-1.08 1.2-1.93 0-1.21-.99-2.2-2.2-2.2-1.21 0-2.2.99-2.2 2.2 0 .85.5 1.56 1.2 1.93V13c0 1.11.89 2 2 2h3v3.05c-.71.37-1.2 1.1-1.2 1.95a2.2 2.2 0 0 0 4.4 0c0-.85-.49-1.58-1.2-1.95V15h3c1.11 0 2-.89 2-2v-2h1V7h-4z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></symbol>
+  </defs>
+</svg>
+<template id="scene-tpl">
+<svg xmlns="http://www.w3.org/2000/svg" class="room" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <rect x="-200" y="-200" width="2000" height="860" fill="#b9c3c7"/>
+  <rect x="-200" y="-200" width="2000" height="330" fill="#c9d2d5"/>
+  <rect x="-200" y="640" width="2000" height="500" fill="#6c675f"/>
+  <rect x="190" y="200" width="310" height="196" rx="8" fill="#2d3134"/>
+  <rect x="204" y="214" width="282" height="156" fill="#34505b"/>
+  <rect x="214" y="226" width="150" height="10" fill="#6fa0b0"/><rect x="214" y="246" width="110" height="10" fill="#5b8696"/><rect x="214" y="266" width="200" height="10" fill="#5b8696"/>
+  <rect x="325" y="396" width="40" height="38" fill="#2d3134"/><rect x="285" y="432" width="120" height="12" rx="4" fill="#2d3134"/>
+  <rect x="-200" y="556" width="2000" height="62" fill="#b58b56"/>
+  <rect x="-200" y="618" width="2000" height="110" fill="#8a683f"/>
+  <rect x="-200" y="556" width="2000" height="6" fill="#d2a86e"/>
+  <ellipse cx="560" cy="556" rx="112" ry="22" fill="#474c52"/>
+  <rect x="520" y="380" width="80" height="176" rx="12" fill="#e9e6df"/>
+  <circle cx="560" cy="380" r="46" fill="#8d9298"/>
+  <g transform="rotate(35 560 380)"><rect x="530" y="150" width="60" height="240" rx="14" fill="#e9e6df"/></g>
+  <circle cx="692" cy="192" r="38" fill="#8d9298"/>
+  <line x1="692" y1="192" x2="872" y2="280" stroke="#e9e6df" stroke-width="52" stroke-linecap="round"/>
+  <circle cx="872" cy="280" r="24" fill="#8d9298"/>
+  <line x1="872" y1="280" x2="914" y2="304" stroke="#555a60" stroke-width="12" stroke-linecap="round"/>
+  <line x1="872" y1="280" x2="916" y2="262" stroke="#555a60" stroke-width="12" stroke-linecap="round"/>
+  <rect x="980" y="330" width="360" height="226" rx="10" fill="#353a40"/>
+  <rect x="1000" y="350" width="320" height="60" rx="6" fill="#23272c"/>
+  <text x="1014" y="391" font-size="30" fill="#9fd3ff" font-family="ui-monospace,Consolas,monospace">CTRL-02   RUN</text>
+  <g fill="#1b1e22"><rect x="1010" y="438" width="54" height="40" rx="4"/><rect x="1080" y="438" width="54" height="40" rx="4"/><rect x="1150" y="438" width="54" height="40" rx="4"/><rect x="1220" y="438" width="54" height="40" rx="4"/></g>
+  <g fill="#aeb4ba" font-size="15" font-family="ui-monospace,Consolas,monospace"><text x="1016" y="502">ETH0</text><text x="1086" y="502">ETH1</text><text x="1156" y="502">CAN</text><text x="1226" y="502">PWR</text></g>
+  <circle cx="1037" cy="530" r="9" fill="#5cf08a"/><circle cx="1107" cy="530" r="9" fill="#5cf08a"/><circle cx="1177" cy="530" r="9" fill="#ff5a4a"/><circle cx="1247" cy="530" r="9" fill="#4a4f55"/>
+  <path d="M1000 556 C 900 600, 760 600, 660 566" stroke="#1f2225" stroke-width="10" fill="none"/>
+  <path d="M1177 480 C 1177 600, 1290 650, 1420 612" stroke="#c43b2e" stroke-width="8" fill="none"/>
+  <rect x="1370" y="536" width="120" height="16" rx="4" fill="#5e6369"/>
+  <rect x="30" y="470" width="160" height="86" rx="6" fill="#9a9690"/><rect x="40" y="480" width="140" height="66" rx="4" fill="#7d7973"/>
+</svg>
+</template>
+
+<div class="wrap">
+
+<div class="backbar" role="note">← 回到黑灯工厂面板：点这个页面右上角的 × 把它关掉，面板就在原来的位置；面板没开的话，在 Claude Code 里输入 /factory</div>
+
+<header class="hdr">
+  <div class="eyebrow">空间应用黑灯工厂 · 站 2 设计 · 门 B 方案确认 · 回设计站 #1（只看变化处）</div>
+  <h1>千里眼 Qianliyan · 样稿 v3</h1>
+  <p class="muted">这一轮只加两件事：专家网页上看到<b>头显的真实画面</b>（用 SpatialML 读回），以及头显和专家之间的<b>双向语音</b>。其余（视野玻璃、笔迹、指点、撤销 / 清除、淡出、结束确认、配色字体、容器）照 v2 样稿不变，没再画。</p>
+  <div class="chips">
+    <span class="chip">容器 STAGE_MIXED · Full Space 透视（不变）</span>
+    <span class="chip">骨架 D（不变）</span>
+    <span class="chip">设计包 v3 · 应用目标 v0.2.0</span>
+    <span class="chip y">14 处变化 · 27 个状态（新 15 / 改 8 / 不变 4）</span>
+    <span class="chip">包名 io.embodit.jieyan</span>
+  </div>
+  <div class="howto">
+    <div class="big">怎么决定：在本页留评论写 <b>「过」</b> 或 <b>「改：你的意见」</b>；也可以在工厂面板点 [继续] / [改…]，或在主对话里说。</div>
+    <div class="tiny">可以按变化编号指位置，例如「改：C12 静音键放到最右」。黄色虚线框 = 本轮变化；没框的是为了看懂上下文照搬的 v2 内容。v2 全稿：<a href="https://claude.ai/artifact/VGuJyygqqS9zZ4vLNEpo68">样稿 v2</a>。</div>
+  </div>
+</header>
+
+<nav class="toc"><ul>
+  <li><a href="#only">本次只看</a></li>
+  <li><a href="#device">真机依赖</a></li>
+  <li><a href="#video">A 真实画面</a></li>
+  <li><a href="#strip">B 通话条</a></li>
+  <li><a href="#lobby">C 配对卡</a></li>
+  <li><a href="#console">D 专家台通话</a></li>
+  <li><a href="#paths">E 两条路</a></li>
+  <li><a href="#states">F 状态总览</a></li>
+</ul></nav>
+
+<!-- ═══════════ 本次只看 ═══════════ -->
+<section id="only">
+  <div class="sec-head"><span class="num">★</span><h2>本次只看这几处</h2><span class="muted">C1–C14，对应设计包 <code>changes[]</code> 与 <code>design/v3-vst-voice.md</code>。</span></div>
+  <div class="tablewrap"><table class="narrow">
+    <thead><tr><th>#</th><th>变化</th><th>看哪里</th><th>真机才能验</th></tr></thead>
+    <tbody>
+      <tr><td class="id">C1</td><td>专家网页是<b>头显真实画面</b>（SpatialML Readback Mode 读回 → JPEG → 原有画面通道）；真机上再也不出现合成画面</td><td><a href="#a1">A1</a> <a href="#a2">A2</a></td><td class="dev">是</td></tr>
+      <tr><td class="id">C2</td><td>专家刚连上先看到「正在打开头显摄像头…」（新 S10），5 秒内出画面</td><td><a href="#a3">A3</a></td><td class="dev">是</td></tr>
+      <tr><td class="id">C3</td><td>画面不可用分 4 种原因说人话，专家可点 [重试]；不再拿合成画面顶替</td><td><a href="#a5">A5</a></td><td class="dev">是</td></tr>
+      <tr><td class="id">C4</td><td>状态签显示真实帧率和大约延迟；卡顿单独一态（新 S11），不遮画面</td><td><a href="#a4">A4</a></td><td class="dev">是</td></tr>
+      <tr><td class="id">C5</td><td>模拟器上的合成画面角上常挂「演示画面 · 模拟器没有摄像头」（新 S3d）</td><td><a href="#a6">A6</a></td><td>否</td></tr>
+      <tr><td class="id">C6</td><td>专家一连上就自动通话，不响铃、不用接听；只走这台头显自己的连接（USB 或局域网），不上云</td><td><a href="#b1">B1</a> <a href="#d1">D1</a></td><td class="dev">回声 / 延迟是</td></tr>
+      <tr><td class="id">C7</td><td>两边各一个静音键，对方看得到「已静音」（新 S12 / S13）</td><td><a href="#b2">B2</a> <a href="#d1">D1</a></td><td>否</td></tr>
+      <tr><td class="id">C8</td><td>谁在说话亮三格声波；自己的麦克风键带音量环，一看就知道麦克风在工作（新 S14）</td><td><a href="#b3">B3</a> <a href="#d1">D1</a></td><td>否</td></tr>
+      <tr><td class="id">C9</td><td>头显启动时摄像头、麦克风一起申请；麦克风被拒只是不能说话，不挡配对（新 S2m）</td><td><a href="#c2">C2</a></td><td>弹窗是</td></tr>
+      <tr><td class="id">C10</td><td>浏览器只在 https 或 localhost 给麦克风：同一网络走 https 自签证书，先给一页「怎么点继续」（Wi-Fi 隔离就两边连同一个手机热点）；专家电脑在旁边时走 USB + localhost；刷新页面后「点一下恢复声音」（新 E4 / E5 / E6 / E7）</td><td><a href="#d2">D2</a> <a href="#paths">E</a></td><td class="dev">证书是</td></tr>
+      <tr><td class="id">C11</td><td>配对卡改版：一个好念的地址 + PIN + 两行权限 + 「连不上？① 手机热点 ② USB 线」；640×384 → 640×448 dp</td><td><a href="#c1">C1</a> <a href="#c2">C2</a></td><td>否</td></tr>
+      <tr><td class="id">C12</td><td>通话条加第 6 个键 🎙（放最左）；616 → 680 dp</td><td><a href="#b1">B1</a></td><td>否</td></tr>
+      <tr><td class="id">C13</td><td>暂停共享只停画面，并提示「麦克风开着」；重连时通话一起断一起回；只断语音单独一态（新 S6a）；结束会话 = 挂断；接通 / 挂断各一声 0.3 秒提示音</td><td><a href="#b4">B4</a></td><td>否</td></tr>
+      <tr><td class="id">C14</td><td>能不能说话两边对称：专家那边开不了麦时，头显显示「专家只能听，不能说」（新 S15）</td><td><a href="#b4">B4</a></td><td>否</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note" style="margin-top:12px"><b>明确不做</b>：冻结画面（你否决过）· 头显里的弹窗 · 铃声和接听步骤 · 云中继 · 多个专家 · 录音录像。</p>
+</section>
+
+<!-- ═══════════ 真机依赖 ═══════════ -->
+<section id="device">
+  <div class="sec-head"><span class="num">!</span><h2>只能在真机上验证的部分</h2><span class="muted">上一轮的教训：核心能力只在模拟器跑通，到最后才发现真机上是假画面。这次先说清楚。</span></div>
+  <div class="grid2">
+    <div class="card"><h4>模拟器能验</h4>
+      <ul class="ul">
+        <li>所有新状态的样子（调试广播强制 S10 / S11 / S8 四种原因 / S3d / S12 / S13 / S14 / S2m）</li>
+        <li>专家台 E4 / E5 / E6、静音消息往返、语音连接的握手与断线重连</li>
+        <li>USB <code>localhost</code> 打开专家台、配对、双向笔迹（v2 原有）；S6a / S15 / S1u / S2s / E7</li>
+      </ul>
+    </div>
+    <div class="card devcard"><h4>只能 Swan 真机验 <span class="st">PB324XJGL2090081G</span></h4>
+      <ul class="ul">
+        <li><b>真实画面</b>：读回能不能到 12–15 fps、每帧耗时、画面比例与相机内参、延迟</li>
+        <li><b>回声</b>：头显的回声消除在 PICO 上是否可用；专家用笔记本外放时有没有回声</li>
+        <li>嘴到耳延迟（目标 ≤ 300 ms）、头显声音走扬声器还是听筒、麦克风权限弹窗</li>
+        <li>https 自签证书在 Android 上能不能生成、Chrome / Edge 接受后能不能开麦</li>
+      </ul>
+      <p class="note">研发站顺序：<b>先在真机上跑 1 小时验证</b>（读回 60 秒 × 两种分辨率并截一帧核对颜色、回声消除是否可用、扬声器、证书能否生成），再写全量。证书不成就只留 USB 这条路，其余设计不变。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ A 真实画面 ═══════════ -->
+<section id="video">
+  <div class="sec-head"><span class="num">A</span><h2>真实画面 · SpatialML 读回</h2><span class="muted">C1–C5。头显侧通话条只多一句「正在打开摄像头…」，其余变化都在专家台。</span></div>
+
+  <h3 id="a1">A1 · 画面从哪来 <span class="cbadge">C1</span></h3>
+  <div class="chg"><div class="flow">
+    <div class="fstep"><b>VST 透视相机</b><span>右眼，已校正</span></div>
+    <div class="farr">→</div>
+    <div class="fstep"><b>SpatialML 图（建一次）</b><span><code>rectifiedVSTAccess</code> → RGB<br><code>convertColor</code> → RGBA · 时间戳 · 内参</span></div>
+    <div class="farr">→</div>
+    <div class="fstep"><b>读回到应用</b><span><code>readbackContentSuspend()</code><br>时间戳没变 = 不是新帧，跳过</span></div>
+    <div class="farr">→</div>
+    <div class="fstep"><b>JPEG（质量 70）</b><span>只留最新一帧，不排队</span></div>
+    <div class="farr">→</div>
+    <div class="fstep y"><b>专家网页取景框</b><span>原有画面通道，不改协议</span></div>
+  </div></div>
+  <div class="dims"><b>默认</b> 960 × 540 · 15 fps　<b>比例</b> 取景框按相机真实视场 (W/fx):(H/fy)，配对阶段探测一次并记住　<b>降级</b> &lt; 12 fps → 质量 55；仍 &lt; 10 fps → 下次会话 640 × 360　<b>权限</b> CAMERA（已有）</div>
+  <p class="note">依据都在 SDK 6.1 文档：读回模式要摄像头权限、只能读全局张量、读回内容用完即关、图建一次反复提交。Pipeline Zoo 里没有「取相机画面给应用」的现成包（只有人脸检测），所以代码里直接建一条 1 个算子的图。取帧格式按两份文档都认的 RGB，再按文档推荐转成 RGBA 后读回。文档没写死的几处（RGBA 的透明通道值、读回和提交的先后），设计里都有兜底：编码前强制不透明，用时间戳去重。</p>
+
+  <h3 id="a2">A2 · 直播：真实画面 + 帧率 / 延迟 <span class="cbadge">C1 C4</span><span class="st2">S3</span></h3>
+  <div class="chg"><div class="console">
+    <div class="chrome"><span class="d"><i></i><i></i><i></i></span><span class="addr">localhost:8765</span></div>
+    <div class="topbar"><span class="brand">千里眼 · 专家台</span><span class="chip r">● 直播</span><span class="lat hl">15 fps · 约 120 ms · USB</span><span class="talk"><i class="bars"><b></b><b></b><b></b></i>现场在说话</span><span class="sp"></span><span class="micbtn hl"><svg><use href="#i-mic"/></svg>静音 <span class="kbd">M</span></span><span class="btn" style="height:32px;padding:0 14px;font-size:12px">结束</span></div>
+    <div class="cmain"><div class="vf" data-cam>
+      <svg class="strokes" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+        <ellipse cx="794" cy="344" rx="48" ry="36" stroke="rgba(0,0,0,.45)" stroke-width="11"/><ellipse cx="794" cy="344" rx="48" ry="36" stroke="#FFE14D" stroke-width="5"/>
+      </svg>
+      <div class="hud" style="left:55.6%;top:26.5%"></div>
+      <span class="tag" style="left:12px;bottom:12px">示意：真机上这里是头显右眼看到的真实画面</span>
+    </div></div>
+    <div class="ctray"><div class="tray glass">
+      <span class="sw sel" style="background:#FFE14D"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#F6F2E6"><svg><use href="#i-check"/></svg></span><span class="sw" style="background:#FF8FB1"><svg><use href="#i-check"/></svg></span>
+      <span class="sep"></span><span class="wd"><svg><use href="#i-d1"/></svg></span><span class="wd sel"><svg><use href="#i-d2"/></svg></span><span class="wd"><svg><use href="#i-d3"/></svg></span>
+      <span class="sep"></span><b class="k"><svg><use href="#i-undo"/></svg></b><b class="k"><svg><use href="#i-clear"/></svg></b><span class="sep"></span><span class="fade"><span class="sw-toggle"><i></i></span>8 秒淡出</span>
+    </div></div>
+  </div></div>
+  <p class="note"><b>帧率</b>是真的：只数时间戳变了的帧。<b>延迟</b>写「约」：从头显读回那一刻算到浏览器显示，曝光到读回那一小段文档没给数据，真机用秒表校一次补常数。末尾 <code>USB</code> / <code>Wi-Fi</code> 告诉专家现在走哪条路。头显上不显示帧率（现场人员不需要）。</p>
+
+  <h3 id="a3">A3 · 首帧加载中 <span class="cbadge">C2</span><span class="st2">S10 · 新</span></h3>
+  <div class="grid2">
+    <div class="card chg"><h4>专家台</h4><div class="vf"><div class="over solid"><span class="ring"></span><span>正在打开头显摄像头…</span><span class="sub">通常 1–3 秒</span></div></div><div class="note">深石板底，不出现任何合成画面。粉笔盘照常可用，可以先画。语音此时已经通了。5 秒还没画面 → A5「摄像头没响应」。画面比例在配对时就探测好了，这里不会因为换分辨率多等。</div></div>
+    <div class="card chg"><h4>头显通话条</h4><div class="scroller"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st"><i class="dot off"></i>正在打开摄像头…</span><span class="keys"><b class="k on mic"><svg><use href="#i-mic"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div><div class="note">红点等第一帧真的发出去才亮。</div></div>
+  </div>
+
+  <h3 id="a4">A4 · 画面卡顿 <span class="cbadge">C4</span><span class="st2">S11 · 新</span></h3>
+  <div class="grid2">
+    <div class="card chg"><h4>专家台取景框</h4><div class="vf" data-cam><span class="chip a tr">画面有点卡 · 已自动降画质</span></div><div class="chips"><span class="chip a">卡顿 6 fps · 约 400 ms</span></div><div class="note">低于 8 fps 持续 3 秒进入；回到 12 fps 以上 3 秒退出。<b>不遮挡画面</b>，只换状态签颜色加一个芯片。完全没帧 3 秒才是原来的「画面 3 秒前」（S7，不变）。</div></div>
+    <div class="card"><h4>头显</h4><p class="note">不变。卡顿是专家那边的事，不打扰现场人员。</p></div>
+  </div>
+
+  <h3 id="a5">A5 · 画面不可用：分原因 + 重试 <span class="cbadge">C3</span><span class="st2">S8 · 改</span></h3>
+  <div class="grid2">
+    <div class="card chg"><h4>没有摄像头权限</h4><div class="vf"><div class="over solid"><span class="big">⚠</span><span>头显没有摄像头权限</span><span class="sub">请现场人员在配对卡上点 [授权]</span></div></div><div class="note">这一种没有 [重试]：要现场人员授权。通话条「画面不可用 · 没有摄像头权限」。</div></div>
+    <div class="card chg"><h4>摄像头没响应（5 秒无首帧）</h4><div class="vf"><div class="over solid"><span class="big">⚠</span><span>头显 5 秒内没给出画面</span><span class="btn y retry"><svg><use href="#i-retry"/></svg>重试</span></div></div><div class="note">通话条「画面不可用 · 摄像头没响应」。</div></div>
+    <div class="card chg"><h4>读回失败（连续 5 次）</h4><div class="vf"><div class="over solid"><span class="big">⚠</span><span>读取头显摄像头失败</span><span class="sub">点 [重试]；还不行请让现场人员重启千里眼</span><span class="btn retry dis">重试 · 3 秒后可点</span></div></div><div class="note">两次重试之间至少 3 秒，按钮上倒数。重试 = 头显把 SpatialML 图拆掉重建 → A3 加载态。</div></div>
+    <div class="card chg"><h4>设备没有透视摄像头</h4><div class="vf"><div class="over solid"><span class="big">⚠</span><span>这台设备没有透视摄像头</span><span class="sub">笔迹和通话照常可用</span></div></div><div class="note">非 Swan 设备。没有 [重试]。</div></div>
+  </div>
+  <p class="note">四种都<b>不显示合成画面</b>，笔迹和语音照常。头显通话条：红点灭，error 色「画面不可用」+ 原因短语。画笔仍禁用（玻璃坐标对不上画面，v2 规则不变）。</p>
+
+  <h3 id="a6">A6 · 模拟器演示画面 <span class="cbadge">C5</span><span class="st2">S3d · 新</span></h3>
+  <div class="card chg" style="max-width:640px"><div class="vf" data-cam><span class="chip demo bl">演示画面 · 模拟器没有摄像头</span><span class="tag" style="right:12px;top:12px">SYNTH 00:12.480 #187</span></div><div class="note">合成画面只在模拟器上出现，而且角上常挂这个芯片，截图里也不会被误当成真实画面。</div></div>
+</section>
+
+<!-- ═══════════ B 通话条 ═══════════ -->
+<section id="strip">
+  <div class="sec-head"><span class="num">B</span><h2>头显 · 通话条（6 键）</h2><span class="muted">C6–C8、C12、C13。1 dp = 1 px 原尺寸。</span></div>
+  <div class="dims chg-inline"><b>尺寸</b> 默认 680 × 112 dp（物理约 0.42 × 0.07 m @ 0.9 m）· 最小 600 · 最大 760 · 6 个 56 dp 键 · 🎙 = ToggleIconButton，最左 · 音量环 = 键外 2 dp 描边（自绘）· 声波 = 状态文字前三格（自绘）</div>
+
+  <h3 id="b1">B1 · 直播 · 通话中 <span class="cbadge">C6 C12</span><span class="st2">S3 · 改</span></h3>
+  <div class="scroller chg"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st"><i class="dot live"></i>直播 · 通话中</span><span class="keys"><b class="k on mic lvl"><svg><use href="#i-mic"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note">🎙 放最左：通话里最常用，盲点也不会碰到最右的 ⏻。默认开着——专家连上即通话，状态文字写明「通话中」，红点照旧表示画面在共享。</p>
+
+  <h3 id="b2">B2 · 我已静音 / 专家已静音 <span class="cbadge">C7</span><span class="st2">S12 · S13 · 新</span></h3>
+  <div class="scroller chg"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st"><i class="dot live"></i><span style="color:var(--alert)">直播 · 我已静音</span></span><span class="keys"><b class="k mic muted"><svg><use href="#i-micoff"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <div class="scroller chg" style="margin-top:12px"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st"><i class="dot live"></i>直播 · <span style="color:var(--label-secondary)">专家已静音</span></span><span class="keys"><b class="k on mic"><svg><use href="#i-mic"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note">自己静音用 alert 橙（要让人注意到「我说的话对方听不见」）；对方静音用次级灰（知道就行）。</p>
+
+  <h3 id="b3">B3 · 正在说话 <span class="cbadge">C8</span><span class="st2">S14 · 新</span></h3>
+  <div class="scroller chg"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st"><i class="dot live"></i><i class="bars g"><b></b><b></b><b></b></i>直播 · 通话中</span><span class="keys"><b class="k on mic"><svg><use href="#i-mic"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note">对方说话：红点后面固定的一格里出三格绿色声波，<b>文字不变</b>，不会每说一句就闪一次。自己说话：🎙 键外的音量环随声音变亮（见 B1）。超过阈值 100 ms 亮，静下 300 ms 灭。</p>
+  <div class="card" style="margin-top:12px"><h4>状态文字只显示一条，按这个先后</h4><p class="note" style="margin:0">画面不可用 › 重连中 › 已暂停画面 · 麦克风开着 › 语音断开 · 正在重连 › 正在打开摄像头… › 画面 3 秒前 › 直播 · 我已静音 › 直播 · 专家只能听，不能说 › 直播 · 专家已静音 › 直播 · 通话中。自己静音同时由 🎙̸ 键表达，文字被盖住也看得出。</p></div>
+
+  <h3 id="b4">B4 · 暂停 / 重连 / 只断语音 / 专家只能听 / 结束 <span class="cbadge">C13 C14</span><span class="st2">S5 · S6 · S9 改 · S6a · S15 新</span></h3>
+  <div class="scroller chg"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st alert"><i class="dot off"></i>已暂停画面 · 麦克风开着</span><span class="keys"><b class="k on mic"><svg><use href="#i-mic"/></svg></b><b class="k dis"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k"><svg><use href="#i-camoff"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <div class="scroller chg" style="margin-top:12px"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st alert"><i class="dot off"></i>↻ 重连中…</span><span class="keys"><b class="k mic dis"><svg><use href="#i-mic"/></svg></b><b class="k dis"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on dis"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span><span class="prog"><i></i></span></div></div></div>
+  <div class="scroller chg" style="margin-top:12px"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st alert"><i class="dot live"></i>语音断开 · 正在重连</span><span class="keys"><b class="k mic dis"><svg><use href="#i-micoff"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <div class="scroller chg" style="margin-top:12px"><div class="mock m6" data-slice><div class="strip s6 glass"><span class="st"><i class="dot live"></i>直播 · <span style="color:var(--label-secondary)">专家只能听，不能说</span></span><span class="keys"><b class="k on mic"><svg><use href="#i-mic"/></svg></b><b class="k"><svg><use href="#i-pen"/></svg></b><b class="k dis"><svg><use href="#i-undo"/></svg></b><b class="k dis"><svg><use href="#i-clear"/></svg></b><b class="k on"><svg><use href="#i-cam"/></svg></b><b class="k"><svg><use href="#i-power"/></svg></b></span></div></div></div>
+  <p class="note"><b>暂停</b>只停画面（停提交、停读回），🎙 保持亮、文字写「麦克风开着」，免得以为暂停了就没人听。<b>重连</b>时 🎙 一起禁用，连回来自动恢复通话。<b>只断语音</b>（S6a）：画面和笔迹照常，语音每 2 秒自己重试。<b>专家只能听</b>（S15）：专家那边浏览器没给麦克风时，现场人员不会傻等回话。<b>结束</b>确认文字不变，「是」= 结束会话 + 挂断；接通和挂断时两边各响一声 0.3 秒短音（不是铃声，不用接听），旁边的人也知道开始通话了。</p>
+</section>
+
+<!-- ═══════════ C 配对卡 ═══════════ -->
+<section id="lobby">
+  <div class="sec-head"><span class="num">C</span><h2>头显 · 配对卡</h2><span class="muted">C9、C11。写给念地址的人看：一个地址、一个 PIN；连不上时照着做。</span></div>
+  <div class="dims chg-inline"><b>尺寸</b> 640 × 448 dp（原 384；物理约 0.56 × 0.39 m @ 1.2 m）· 最小 560 × 400 · 最大 720 × 480 · 地址 titleLarge · PIN displayLarge 字距 +8 · 权限两行 labelMedium · adb 命令等宽 labelMedium，fillTertiary 底</div>
+
+  <h3 id="c1">C1 · 等待专家接入 <span class="cbadge">C11</span><span class="st2">S1 · 改</span></h3>
+  <div class="scroller chg"><div class="mock lob" data-scene>
+    <div class="lobby v3 glass">
+      <div class="t"><i class="dot hollow"></i>千里眼 · 等待专家接入</div>
+      <div class="lb">电脑浏览器打开</div>
+      <div class="row2"><div class="url">30.16.255.24:8765</div><div class="pinbox"><span class="lb">PIN</span><span class="pin">4 8 2 7</span></div></div>
+      <div class="perms"><span class="pr ok"><i></i>摄像头 · 已授权</span><span class="pr ok"><i></i>麦克风 · 已授权</span></div>
+      <div class="rule"></div>
+      <div class="hint">连不上（公司 Wi-Fi 常这样）？</div>
+      <div class="hint2">① 头显和电脑都连同一个手机热点，再打开上面的地址</div>
+      <div class="hint2">② 电脑就在旁边：USB 线连上，电脑运行 <span class="cmd">adb forward tcp:8765 tcp:8765</span> 再打开 <b>localhost:8765</b></div>
+    </div>
+  </div></div>
+  <p class="note">地址不写 <code>http://</code>，好念；连上热点换了网段，地址自动刷新。同一网络打开它会先到 D2 的提示页，再转到能通话的 https 地址。你今天碰到的情况（电脑 10.73.x、头显 30.16.x 互相不通）：要真远程就用 ①，专家电脑在旁边就用 ②。</p>
+
+  <h3 id="c2">C2 · 权限被拒 / 只推荐 USB <span class="cbadge">C9 C11</span><span class="st2">S2 改 · S2m · S2s · S1u 新</span></h3>
+  <div class="grid2">
+    <div class="card chg"><h4>摄像头被拒 <span class="st">S2</span></h4><div class="lobsnip glass"><span class="pr err"><svg class="ico"><use href="#i-camoff"/></svg>摄像头未授权 · 专家看不到画面<span class="btn y sm">授权</span></span><span class="pr ok"><i></i>麦克风 · 已授权</span></div><div class="note">error 红。专家仍能连上、能通话，取景框是 A5「没有摄像头权限」。</div></div>
+    <div class="card chg"><h4>麦克风被拒 <span class="st">S2m</span></h4><div class="lobsnip glass"><span class="pr ok"><i></i>摄像头 · 已授权</span><span class="pr warn"><svg class="ico"><use href="#i-micoff"/></svg>麦克风未授权 · 只能看不能说<span class="btn y sm">授权</span></span></div><div class="note">alert 橙（不是错误，只是少了一项）。配对不受影响；专家台顶栏挂芯片「现场麦克风未开」。</div></div>
+    <div class="card chg"><h4>选过「不再询问」 <span class="st">S2s</span></h4><div class="lobsnip glass"><span class="pr err"><svg class="ico"><use href="#i-camoff"/></svg>摄像头未授权 · 专家看不到画面<span class="btn y sm">去设置</span></span><span class="pr ok"><i></i>麦克风 · 已授权</span></div><div class="note">系统不再弹窗时，按钮换成 [去设置]，直接打开千里眼的系统权限页。麦克风行同理。</div></div>
+    <div class="card chg"><h4>https 做不出来时 <span class="st">S1u · 条件态</span></h4><div class="lobsnip glass"><span class="lb">电脑浏览器打开</span><span class="url sm">30.16.255.24:8765</span><span class="hint">同一网络打开它能看画面；要通话请用 ②</span></div><div class="note">只有真机验证失败、把 https 关掉时才出现。</div></div>
+  </div>
+</section>
+
+<!-- ═══════════ D 专家台通话 ═══════════ -->
+<section id="console">
+  <div class="sec-head"><span class="num">D</span><h2>专家台 · 通话控件与麦克风提示</h2><span class="muted">C6–C8、C10。顶栏右侧多一个 🎙 键；有问题时顶栏下多一行提示条，不弹窗、不挡画面。</span></div>
+
+  <h3 id="d1">D1 · 顶栏各态 <span class="cbadge">C6 C7 C8</span></h3>
+  <div class="bars-demo chg">
+    <div class="tb"><span class="chip r">● 直播</span><span class="lat">15 fps · 约 120 ms · Wi-Fi</span><span class="sp"></span><span class="micbtn lvl"><svg><use href="#i-mic"/></svg>静音 <span class="kbd">M</span></span><span class="cap">通话中（S3）· 音量环随自己声音亮</span></div>
+    <div class="tb"><span class="chip r">● 直播</span><span class="talk"><i class="bars"><b></b><b></b><b></b></i>现场在说话</span><span class="sp"></span><span class="micbtn"><svg><use href="#i-mic"/></svg>静音 <span class="kbd">M</span></span><span class="cap">对方说话（S14）</span></div>
+    <div class="tb"><span class="chip r">● 直播</span><span class="sp"></span><span class="micbtn muted"><svg><use href="#i-micoff"/></svg>已静音 <span class="kbd">M</span></span><span class="cap">专家静音（S13）</span></div>
+    <div class="tb"><span class="chip r">● 直播</span><span class="chip g">现场已静音</span><span class="sp"></span><span class="micbtn"><svg><use href="#i-mic"/></svg>静音 <span class="kbd">M</span></span><span class="cap">现场静音（S12）</span></div>
+    <div class="tb"><span class="chip r">● 直播</span><span class="sp"></span><span class="micbtn"><svg><use href="#i-mic"/></svg>静音 <span class="kbd">M</span></span><span class="cap">第一次接通</span></div>
+    <div class="tipbar info">戴耳机通话效果最好（笔记本外放可能让现场听到回声）<span class="x">知道了</span></div>
+    <div class="tb"><span class="chip r">● 直播</span><span class="chip a">语音重连中</span><span class="sp"></span><span class="micbtn dis"><svg><use href="#i-micoff"/></svg>静音</span><span class="cap">只断语音（S6a）</span></div>
+  </div>
+  <p class="note">专家点 [连接] 那一下同时申请麦克风、解锁播放（浏览器要求用户手势）。之后什么都不用点就在通话。「戴耳机」这行每次会话出现一次，可收起。<b>回声兜底</b>只开在专家这边：现场在说话时专家麦克风暂停发送，专家停口 300 毫秒后恢复，两边不会互相压住。</p>
+
+  <h3 id="d2">D2 · 麦克风 / 声音出不来的几种情况 <span class="cbadge">C10</span><span class="st2">E4 · E5 · E6 · E7 · 新</span></h3>
+  <div class="grid2">
+    <div class="card chg"><h4>不安全地址 <span class="st">E4</span></h4>
+      <div class="tb"><span class="chip r">● 直播</span><span class="sp"></span><span class="micbtn dis"><svg><use href="#i-micoff"/></svg>静音</span></div>
+      <div class="tipbar warn">这个地址浏览器不给开麦克风。要说话：用 USB 打开 localhost:8765，或 <u>换 https 地址 →</u></div>
+      <div class="note">局域网 http 且选了「先不通话」。能听、能看、能画，只是不能说。</div></div>
+    <div class="card chg"><h4>浏览器拦了麦克风 <span class="st">E5</span></h4>
+      <div class="tb"><span class="chip r">● 直播</span><span class="sp"></span><span class="micbtn dis"><svg><use href="#i-micoff"/></svg>静音</span></div>
+      <div class="tipbar warn">浏览器拦了麦克风：点地址栏左侧 <svg class="inl"><use href="#i-lock"/></svg> → 麦克风 → 允许，再点 <u>重试</u></div>
+      <div class="note">同样能听、能看、能画。头显这时显示「专家只能听，不能说」（S15）。</div></div>
+    <div class="card chg"><h4>刷新页面后没声音 <span class="st">E7</span></h4><div class="vf" data-cam><span class="chip w bl">🔇 点一下恢复声音</span></div><div class="note">页面会自己重连，但浏览器不让没点过的页面出声。点页面任意处或这个芯片就恢复。不是弹窗，不挡画面。</div></div>
+  </div>
+  <div class="card chg" style="margin-top:18px"><h4>安全地址提示页 <span class="st">E6</span></h4>
+    <div class="slateboard">
+      <div class="gate"><div class="title">为了能通话，要换到安全地址</div>
+        <ol class="steps"><li>点下面的 [继续]</li><li>浏览器会提示「不安全」或「您的连接不是私密连接」，点「高级」</li><li>点「继续前往」</li></ol>
+        <div class="sub">提示「不安全」是因为证书是这台头显自己签的，只在你们这台头显和电脑之间用。每台电脑只需要点一次。</div>
+        <div class="actions"><span class="btn y lg">继续</span></div>
+        <div class="tiny" style="text-align:center"><u>先不通话，只看画面</u></div>
+      </div>
+    </div>
+    <div class="note">只在同一网络用 <code>&lt;ip&gt;:8765</code> 打开时出现；USB 的 <code>localhost</code> 不会看到这一页。浏览器自己的「不安全」页不归我们画。卡片底部还有一行：「看不到『继续前往』？是公司浏览器策略拦了，请用手机热点 + 其他浏览器，或 USB」。</div>
+  </div>
+</section>
+
+<!-- ═══════════ E 两条路 ═══════════ -->
+<section id="paths">
+  <div class="sec-head"><span class="num">E</span><h2>专家怎么连上：两条路</h2><span class="muted">浏览器只在 https 或 localhost 给麦克风。画面、笔迹、语音都只走这台头显自己开的服务，不经过任何云（手机热点也只是局域网）。</span></div>
+  <div class="grid2 chg">
+    <div class="card path"><h4><svg class="ico"><use href="#i-lock"/></svg>① 同一网络（https）· 真远程用这条</h4>
+      <ol class="steps"><li>头显和电脑在同一个 Wi-Fi；公司 Wi-Fi 互相不通时，两边都连同一个手机热点</li><li>浏览器输入配对卡上的 <code>30.16.255.24:8765</code> → 提示页 E6 → [继续]</li><li>浏览器「不安全」→「高级」→「继续前往」，输 PIN</li></ol>
+      <div class="note">证书第一次启动时生成并保存，同一台电脑只点一次；头显换了 IP 才会再提示。<b>真机待验</b>：Android 上能否生成这张证书、Chrome / Edge 接受后能否开麦；做不出来就只留 ②，配对卡换 S1u。</div></div>
+    <div class="card path"><h4><svg class="ico"><use href="#i-usb"/></svg>② USB 线 · 专家电脑在旁边</h4>
+      <ol class="steps"><li>头显 USB 连电脑（头显要已允许这台电脑 USB 调试）</li><li>电脑运行 <code>adb forward tcp:8765 tcp:8765</code></li><li>浏览器打开 <code>localhost:8765</code>，输 PIN</li></ol>
+      <div class="note">今天已经验证能打开（返回 200），不怕任何网络策略。localhost 本来就算安全来源，麦克风直接能用，没有证书提示。代价是电脑得在头显旁边，所以它是兜底和调试用的路。</div></div>
+  </div>
+  <div class="tablewrap" style="margin-top:16px"><table class="narrow">
+    <thead><tr><th>连接</th><th>内容</th><th>格式</th></tr></thead>
+    <tbody>
+      <tr><td class="id">/ws</td><td>画面帧 + 笔迹 / 光标 / 状态（v2 原有）</td><td>JPEG 帧 <code>[u32 seq][u64 ts][jpeg]</code> + JSON 消息；新增 <code>video.retry</code>、<code>call{muted, micAvailable}</code></td></tr>
+      <tr><td class="id">/audio</td><td>双向语音（新）</td><td>每 20 ms 一包 <code>[u16 seq][u8 静音标记][16 kHz PCM16 × 320]</code>；抖动缓冲 60 ms，最多 200 ms；单独断开每 2 s 重试</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">语音单开一条连接：画面一帧 60–90 KB，和 640 字节的语音包挤一条连接会被大帧堵住。用不压缩的 PCM：16 kHz 单声道 256 kbps，比画面小一个数量级，两边都不用加编码库；以后跨网再换 Opus。头显用 Android 通话录音（<code>VOICE_COMMUNICATION</code>）+ 回声消除，并明确把声音指定到头显扬声器（通话模式默认可能走听筒）；没有用 SpatialML 的麦克风算子，它是给模型喂音频的，不带通话回声消除。</p>
+</section>
+
+<!-- ═══════════ F 状态总览 ═══════════ -->
+<section id="states">
+  <div class="sec-head"><span class="num">F</span><h2>状态总览（QA 按名字截）</h2><span class="muted">新增和改动的在上面；没变的收起来了。</span></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>状态</th><th>端</th><th>怎么到达</th><th>QA 怎么截（必须看到）</th></tr></thead>
+    <tbody>
+      <tr class="new"><td class="id">S10</td><td class="nm">首帧加载中 <span class="nb">新</span></td><td class="side">双端</td><td>接入 / 共享恢复 / [重试] 后还没有第一帧；调试广播 state=S10</td><td>专家台：深石板 + 环形进度「正在打开头显摄像头…」「通常 1–3 秒」，粉笔盘可用。头显：「正在打开摄像头…」。无合成画面。</td></tr>
+      <tr class="new"><td class="id">S11</td><td class="nm">画面卡顿 <span class="nb">新</span></td><td class="side">专家</td><td>&lt; 8 fps 持续 3 s；调试广播 state=S11 fps=6</td><td>状态签 alert「卡顿 6 fps · 约 400 ms」+ 芯片「画面有点卡 · 已自动降画质」；不遮挡画面。</td></tr>
+      <tr class="new"><td class="id">S3d</td><td class="nm">演示画面（仅模拟器）<span class="nb">新</span></td><td class="side">专家</td><td>模拟器上正常接入</td><td>合成画面左下常显「演示画面 · 模拟器没有摄像头」。</td></tr>
+      <tr class="new"><td class="id">S12</td><td class="nm">头显已静音 <span class="nb">新</span></td><td class="side">双端</td><td>通话条 🎙</td><td>头显 🎙̸ alert 底 +「直播 · 我已静音」；专家台芯片「现场已静音」。</td></tr>
+      <tr class="new"><td class="id">S13</td><td class="nm">专家已静音 <span class="nb">新</span></td><td class="side">双端</td><td>专家顶栏 🎙 或 M</td><td>专家台 🎙̸「已静音」alert 底；头显「直播 · 专家已静音」灰字。</td></tr>
+      <tr class="new"><td class="id">S14</td><td class="nm">正在说话 <span class="nb">新</span></td><td class="side">双端</td><td>有声音；调试广播 speak=expert|worker</td><td>对方说话：三格绿声波 +「专家在说话」/「现场在说话」；自己说话：🎙 音量环亮。</td></tr>
+      <tr class="new"><td class="id">S2m</td><td class="nm">配对 · 麦克风被拒 <span class="nb">新</span></td><td class="side">头显</td><td>系统麦克风弹窗拒绝；调试广播 perm=mic:false</td><td>麦克风行 alert「麦克风未授权 · 只能看不能说」+ [授权]；摄像头行照常。</td></tr>
+      <tr class="new"><td class="id">E4</td><td class="nm">专家台 · 麦克风要安全地址 <span class="nb">新</span></td><td class="side">专家</td><td>局域网 http 打开、选「先不通话」</td><td>🎙 禁用 + alert 提示条（USB / https 两条出路）。</td></tr>
+      <tr class="new"><td class="id">E5</td><td class="nm">专家台 · 麦克风被拒 <span class="nb">新</span></td><td class="side">专家</td><td>浏览器拒绝麦克风</td><td>🎙 禁用 + 提示条「点地址栏左侧 🔒 → 麦克风 → 允许，再点 重试」。</td></tr>
+      <tr class="new"><td class="id">S6a</td><td class="nm">语音断开 · 正在重连 <span class="nb">新</span></td><td class="side">双端</td><td>/audio 断而 /ws 在；调试广播 drop=audio</td><td>头显 alert「语音断开 · 正在重连」、🎙 禁用；专家台芯片「语音重连中」；画面、笔迹照常。</td></tr>
+      <tr class="new"><td class="id">S15</td><td class="nm">专家只能听 <span class="nb">新</span></td><td class="side">头显</td><td>专家处于 E4 / E5；调试广播 expertMic=off</td><td>「直播 · 专家只能听，不能说」灰字。</td></tr>
+      <tr class="new"><td class="id">S1u</td><td class="nm">配对 · 只推荐 USB（条件态）<span class="nb">新</span></td><td class="side">头显</td><td>https 关掉时；调试广播 https=off</td><td>地址下一行小字「同一网络打开它能看画面；要通话请用 ②」。</td></tr>
+      <tr class="new"><td class="id">S2s</td><td class="nm">配对 · 要去系统设置 <span class="nb">新</span></td><td class="side">头显</td><td>权限选过「不再询问」；调试广播 perm=cam:never</td><td>权限行按钮 [去设置]。</td></tr>
+      <tr class="new"><td class="id">E7</td><td class="nm">专家台 · 点一下恢复声音 <span class="nb">新</span></td><td class="side">专家</td><td>接入后刷新页面</td><td>取景框左下芯片「🔇 点一下恢复声音」，点后消失。</td></tr>
+      <tr class="new"><td class="id">E6</td><td class="nm">专家台 · 安全地址提示页 <span class="nb">新</span></td><td class="side">专家</td><td>局域网 <code>&lt;ip&gt;:8765</code> 首次打开</td><td>卡片「为了能通话，要换到安全地址」+ 三步 + [继续] +「先不通话，只看画面」。</td></tr>
+      <tr class="chgrow"><td class="id">S1</td><td class="nm">配对 <span class="nb c">改</span></td><td class="side">双端</td><td>启动；结束会话后</td><td>配对卡 640×448：地址（无 http://）+ PIN + 两行权限 + USB 三行说明。</td></tr>
+      <tr class="chgrow"><td class="id">S2</td><td class="nm">配对 · 摄像头被拒 <span class="nb c">改</span></td><td class="side">头显</td><td>系统相机弹窗拒绝</td><td>摄像头行 error + [授权]；麦克风行照常。另截：两项都被拒。</td></tr>
+      <tr class="chgrow"><td class="id">S3</td><td class="nm">直播 · 通话中 <span class="nb c">改</span></td><td class="side">双端</td><td>PIN 正确（同时接通语音）</td><td>头显 6 键「直播 · 通话中」；专家台真实画面（真机）+「15 fps · 约 120 ms · USB」+ 🎙。另截：状态签 USB / Wi-Fi 两版、「戴耳机」提示行、双方同时静音。</td></tr>
+      <tr class="chgrow"><td class="id">S5</td><td class="nm">已暂停画面 · 麦克风开着 <span class="nb c">改</span></td><td class="side">双端</td><td>◉ 关</td><td>头显 alert「已暂停画面 · 麦克风开着」，🎙 亮；专家台遮罩「对方已暂停画面 / 还能继续通话」。</td></tr>
+      <tr class="chgrow"><td class="id">S6</td><td class="nm">重连中 <span class="nb c">改</span></td><td class="side">双端</td><td>连接断开</td><td>同 v2；另两边 🎙 禁用，恢复后自动通话。</td></tr>
+      <tr class="chgrow"><td class="id">S8</td><td class="nm">画面不可用 <span class="nb c">改</span></td><td class="side">双端</td><td>权限 / 5 s 无首帧 / 读回连败 / 无 VST；调试广播 reason=…</td><td>4 种原因各截一张 + [重试] 倒数中一张；无合成画面。</td></tr>
+      <tr class="chgrow"><td class="id">S9</td><td class="nm">结束确认 <span class="nb c">改</span></td><td class="side">头显</td><td>⏻</td><td>同 v2；「是」同时挂断，两端各一声 0.3 s 提示音。</td></tr>
+      <tr class="chgrow"><td class="id">E1</td><td class="nm">专家台 · PIN 门 <span class="nb c">改</span></td><td class="side">专家</td><td>打开页面</td><td>同 v2；USB 的 localhost 也是这张卡；[连接] 后浏览器弹麦克风许可。</td></tr>
+    </tbody>
+  </table></div>
+  <details class="old"><summary>没变的 4 个状态（S4 我在画 · S7 画面过期 · E2 清除提示 · E3 结束对话框）</summary>
+    <p class="note">与 v2 样稿完全相同，见 <a href="https://claude.ai/artifact/VGuJyygqqS9zZ4vLNEpo68">样稿 v2</a> 第 1、4、6、7 节。S7 文案不变，只是它现在和 S11 卡顿分开：有帧但慢 = S11，完全没帧 3 秒 = S7。</p>
+  </details>
+  <p class="note" style="margin-top:12px"><b>新增转换</b>　T13 头显静音 · T14 专家静音 · T15 首帧到达 · T16 画面重试 · T17 麦克风授权 · T18 换安全地址 · T19 自动接通（PIN 正确即通话，不响铃）· T20 语音单独重连 · T21 恢复声音 · T22 接通 / 挂断提示音。</p>
+</section>
+
+<footer class="foot">
+  千里眼 Qianliyan · 设计包 v3（2026-10-21，回设计站 #1，只改变化处）· 设计评审 1 轮（12 条已并入）· 细节：<code>design/v3-vst-voice.md</code>、<code>apps/jieyan/design-package.json</code> · 空间应用黑灯工厂 站 2 设计 · 门 B。
+  SpatialML 依据：SDK 6.1 文档 spatial-ml_*（读回模式、rectifiedVSTAccess、读回 API、权限说明）与 pico-dev-knowledge 查询；Pipeline Zoo 已查（无相机读回包）。
+</footer>
+
+</div>
+
+
+<script>
+(function(){
+  var tpl = document.getElementById('scene-tpl');
+  function scene(vb){ var s = tpl.content.firstElementChild.cloneNode(true); if (vb) s.setAttribute('viewBox', vb); return s; }
+  document.querySelectorAll('[data-scene]').forEach(function(el){ el.insertBefore(scene('0 0 1600 900'), el.firstChild); });
+  document.querySelectorAll('[data-cam]').forEach(function(el){ el.insertBefore(scene('160 90 1280 720'), el.firstChild); });
+  document.querySelectorAll('[data-slice]').forEach(function(el){ el.insertBefore(scene('300 380 1200 300'), el.firstChild); });
+})();
+</script>

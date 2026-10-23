@@ -10,5 +10,10 @@
                 <action android:name="io.embodit.jieyan.DEBUG" />
             </intent-filter>
         </receiver>
+        <!-- installs the HTTP twin of the receiver (GET /debug on the assist server; broadcasts queue on a headset with the display off) -->
+        <provider
+            android:name=".debug.DebugInit"
+            android:authorities="io.embodit.jieyan.debuginit"
+            android:exported="false" />
     </application>
 </manifest>

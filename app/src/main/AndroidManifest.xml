@@ -5,6 +5,11 @@
     <!-- CAMERA: SpatialML readback of the VST image (device only; the emulator uses the synthetic source).
          INTERNET / network state: the headset hosts the expert page and the WebSocket on :8765. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- RECORD_AUDIO / MODIFY_AUDIO_SETTINGS: two-way voice (design v3 C6, communication mode while in a call). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -54,6 +59,9 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.Jieyan" />
+
+        <!-- opt into the SpatialML experimental API (readback of the VST picture) -->
+        <meta-data android:name="pico.spatial.use_experimental_api" android:value="1" />
 
         <meta-data android:name="icon.3d.list" android:resource="@array/icon_3d_list" />
         <meta-data android:name="icon.sdf.list" android:resource="@array/icon_sdf_list" />

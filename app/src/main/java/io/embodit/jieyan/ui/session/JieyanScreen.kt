@@ -87,5 +87,5 @@ fun JieyanScreen() {
     // model -> entities (which panels stand where)
     LaunchedEffect(scene, state.phase, state.confirmingEnd, state.permissionGranted, state.intrinsics, state.penOn) { scene.render(state) }
 
-    JieyanStage(state = state, scene = scene, onEvent = viewModel::onEvent)
+    JieyanStage(state = state, levels = viewModel.levels, scene = scene, onEvent = viewModel::onEvent)
 }

@@ -9,9 +9,13 @@ import org.json.JSONObject
  * camera image (0..1). The headset is the authority: the page only mirrors `state`.
  *
  * expert -> headset: hello{pin, session?} · stroke.begin/point/end · undo{id} · clear · unclear ·
- *                    pointer{x,y} · pen{on} (not used by the page) · fade{on} · end · ping{ts}
- * headset -> expert: welcome{session,imageW,imageH,fps} · reject{reason} · state{...} · stroke.* ·
- *                    undo · clear · unclear · pointer · pen{on} · fade{on} · end · pong{ts}
+ *                    pointer{x,y} · pen{on} (not used by the page) · fade{on} · end · ping{ts} ·
+ *                    mute{on} · mic{state: ok|insecure|denied} · video.retry
+ * headset -> expert: welcome{session,imageW,imageH,fx,fy,fps,link,demo,https} · reject{reason} · state{...} ·
+ *                    stroke.* · undo · clear · unclear · pointer · pen{on} · fade{on} · end · pong{ts,hs} ·
+ *                    video{imageW,imageH,fx,fy,fps,q} (once a second while the picture runs)
+ *
+ * Voice runs on the second socket `/audio?session=…`: binary `[u16 seq][u8 flags][PCM16 LE x 320]` both ways.
  */
 object Protocol {
     fun stroke(stroke: Stroke): JSONObject =
@@ -69,23 +73,41 @@ object Protocol {
 
     fun end(reason: String): JSONObject = JSONObject().put("t", "end").put("reason", reason)
 
-    fun pong(ts: Long): JSONObject = JSONObject().put("t", "pong").put("ts", ts)
+    /** [hs]: the headset's `elapsedRealtime` when answering (the page estimates the clock offset for the latency). */
+    fun pong(ts: Long, hs: Long): JSONObject = JSONObject().put("t", "pong").put("ts", ts).put("hs", hs)
 
-    fun welcome(session: String, intrinsics: CameraIntrinsics, fps: Int): JSONObject =
-        JSONObject().put("t", "welcome").put("session", session).put("imageW", intrinsics.width).put("imageH", intrinsics.height).put("fps", fps)
+    fun welcome(session: String, intrinsics: CameraIntrinsics, fps: Int, link: String, demo: Boolean, https: Boolean): JSONObject =
+        intrinsicsInto(JSONObject().put("t", "welcome").put("session", session), intrinsics)
+            .put("fps", fps)
+            .put("link", link)
+            .put("demo", demo)
+            .put("https", https)
+
+    fun video(intrinsics: CameraIntrinsics, fps: Float, quality: Int): JSONObject =
+        intrinsicsInto(JSONObject().put("t", "video"), intrinsics).put("fps", fps.toDouble()).put("q", quality)
+
+    private fun intrinsicsInto(o: JSONObject, k: CameraIntrinsics): JSONObject =
+        o.put("imageW", k.width).put("imageH", k.height).put("fx", k.fx.toDouble()).put("fy", k.fy.toDouble())
 
     fun reject(reason: String): JSONObject = JSONObject().put("t", "reject").put("reason", reason)
 
-    /** Full state, sent on connect / reconnect and whenever share, pen, data or fade change. */
-    fun state(phase: Phase, share: Boolean, pen: Boolean, data: DataState, fade: Boolean, strokes: List<Stroke>): JSONObject =
+    /** The voice part of `state`: both mute flags, whether the worker's microphone is allowed. */
+    data class VoiceState(val workerMuted: Boolean, val expertMuted: Boolean, val workerMic: Boolean)
+
+    /** Full state, sent on connect / reconnect and whenever share, pen, data, fade or the voice flags change. */
+    fun state(phase: Phase, share: Boolean, pen: Boolean, data: DataState, reason: VideoError, fade: Boolean, strokes: List<Stroke>, voice: VoiceState): JSONObject =
         JSONObject()
             .put("t", "state")
             .put("phase", phase.name.lowercase())
             .put("share", share)
             .put("pen", pen)
             .put("data", data.wire)
+            .put("reason", reason.wire)
             .put("fade", fade)
             .put("strokes", JSONArray().apply { strokes.forEach { put(stroke(it)) } })
+            .put("workerMuted", voice.workerMuted)
+            .put("expertMuted", voice.expertMuted)
+            .put("workerMic", voice.workerMic)
 
     /** Binary picture frame: `[u32 seq][u64 tsMs][jpeg]`, big-endian. */
     fun frame(seq: Int, tsMs: Long, jpeg: ByteArray): ByteArray {
