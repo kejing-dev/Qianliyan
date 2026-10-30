@@ -4,13 +4,13 @@
 
 | 会话 | 标题 | 行数 |
 |---|---|---|
-| `22779b79` | [jieyan] design #1 · 样稿 + 门 B | 371 |
 | `42254dea` | [jieyan] qa #1 · 三道门禁 + 状态截图 | 846 |
-| `d3f945ad` | [jieyan] build #1 · 研发 · 装到 emulator-5560 | 1640 |
 | `5dc42001` | [jieyan] build #4 · 修 q2-1 配对卡黑块 | 1213 |
 | `ae304566` | [jieyan] QA #3 · 千里眼 v0.1.3 复验 | 779 |
-| `010e9c12` | [jieyan] qa #2 · 千里眼 v0.1.2 复验 | 897 |
-| `1f171205` | [jieyan] design v2 · VST + 语音 | 752 |
 | `618f0175` | [jieyan] build #5 · SpatialML 真实画面 + 语音 | 1354 |
 | `50ad3b1c` | [jieyan] showcase · 千里眼 v0.2.0 发布 | 458 |
 | `133cb097` | [jieyan] showcase · 千里眼 第一跑 | 777 |
+| `010e9c12` | [jieyan] qa #2 · 千里眼 v0.1.2 复验 | 897 |
+| `22779b79` | [jieyan] design #1 · 样稿 + 门 B | 371 |
+| `1f171205` | [jieyan] design v2 · VST + 语音 | 752 |
+| `d3f945ad` | [jieyan] build #1 · 研发 · 装到 emulator-5560 | 1640 |
